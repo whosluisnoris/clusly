@@ -127,14 +127,25 @@ de puesta en marcha en [08-cuentas-votacion-setup.md](08-cuentas-votacion-setup.
 | Columna | Tipo | Descripción |
 |---|---|---|
 | `id` | uuid (PK, FK → `auth.users`, ON DELETE CASCADE) | Mismo id que la cuenta |
-| `display_name` | text | Nombre visible (de los metadatos del registro) |
+| `display_name` | text | Nombre visible (de los metadatos del registro; máx. 60) |
 | `role` | text | `owner` \| `admin` \| `user` (CHECK en DB, default `user`) |
+| `bio` | text | Biografía del perfil (máx. 300) |
+| `location` | text | Ubicación libre (máx. 80) |
+| `links` | jsonb | Arreglo de `{label, url}` (máx. 6), solo http/https |
+| `updated_at` | timestamptz | Última edición del perfil |
 | `created_at` | timestamptz | |
 
 Se crea sola al registrarse (trigger `on_auth_user_created` → `handle_new_user`). El
 rol define el acceso al panel: `owner` y `admin` son "staff" (`isStaff()` en
 `src/lib/auth.ts`). **Nadie puede auto-asignarse un rol**: se revocó el `UPDATE` de la
 columna `role` a `anon`/`authenticated`; solo el service role (servidor) la cambia.
+
+Los campos del perfil (`bio`, `location`, `links`) se editan en `/perfil` vía
+`PATCH /api/profile`. Como la política `profiles self update` permite además editar la
+fila desde el navegador, los topes de tamaño viven **también en la base** (CHECKs) y los
+enlaces se validan dos veces: al guardar y al pintarlos (solo `http`/`https`, nunca
+`javascript:`). El nombre visible se escribe en `profiles.display_name` **y** en los
+metadatos de la cuenta, que es de donde lo lee `getCurrentUser`.
 
 ### Nuevas columnas en `resources`
 
@@ -266,3 +277,6 @@ Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_RO
 11. **`0004_aportes_pendientes`** (`supabase/migrations/`): el CHECK de
    `resources.status` acepta además `pending` (solo se amplía) y se agrega la
    columna `submitted_session` para el antiflood de los aportes sin cuenta.
+12. **`0005_perfil`** (`supabase/migrations/`): columnas `bio`, `location`, `links`
+   (jsonb, default `[]`) y `updated_at` en `profiles`, con CHECKs de tamaño para
+   que los límites se cumplan aunque se edite la fila desde el navegador.

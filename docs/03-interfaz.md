@@ -74,6 +74,20 @@ cuenta** (sale como "Anónimo") o con sesión (firmada con el nombre visible); h
 límite de 3 opiniones por hora y persona. El staff modera desde `/admin` → pestaña
 **Opiniones** (ocultar / mostrar / borrar). Enlazada desde la barra y el pie de página.
 
+## Perfil
+
+**`/perfil`** ([página](../src/app/(catalog)/perfil/page.tsx)) reúne la información de
+la cuenta: avatar con la inicial, nombre, correo, distintivo de rol (solo staff),
+ubicación y desde cuándo es miembro. Debajo, la biografía y los enlaces, y un resumen
+de actividad (aportes, guardados, votos y opiniones) donde cada tarjeta lleva a su
+sección.
+
+[`ProfileCard`](../src/components/ProfileCard.tsx) alterna entre la vista y el
+formulario en el mismo sitio: nombre visible, biografía (300 caracteres con contador),
+ubicación y hasta 6 enlaces con etiqueta. Guarda con `PATCH /api/profile` y refresca la
+página para que la barra y las opiniones firmadas vean el nombre nuevo. Los enlaces se
+abren con `rel="noopener noreferrer nofollow"` y solo si son `http`/`https`.
+
 ## Aportar sin cuenta
 
 `/enviar` ya no exige sesión para entrar. Se llena la URL y las categorías, y al

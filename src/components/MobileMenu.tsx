@@ -25,7 +25,12 @@ export function MobileMenu({
   const [open, setOpen] = useState(false);
   const links = [
     ...LINKS,
-    ...(loggedIn ? [{ href: "/guardados", label: "Guardados" }] : []),
+    ...(loggedIn
+      ? [
+          { href: "/guardados", label: "Guardados" },
+          { href: "/perfil", label: "Mi perfil" },
+        ]
+      : []),
     { href: "/opiniones", label: "Opiniones" },
     ...(showAdmin ? [{ href: "/admin", label: "Admin" }] : []),
   ];

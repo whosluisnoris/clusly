@@ -22,6 +22,8 @@ videos dispersos.
   lo guardado forma una lista privada del usuario.
 - **Opiniones (`/opiniones`)**: sección de feedback abierta (con o sin cuenta) con
   el termómetro de la comunidad y moderación desde el panel.
+- **Perfil (`/perfil`)**: los datos de la cuenta, biografía, ubicación y enlaces
+  editables, más el resumen de actividad del usuario.
 - **Roles** (`owner` / `admin` / `user`): el panel `/admin` se abre por el rol de la
   sesión (no por contraseña); ahí se gestionan categorías, recursos y lives, más
   estadísticas.
@@ -50,6 +52,7 @@ Navegador (Next.js)
   │  POST /api/resources/[id]/vote► voto +/− (sesión requerida)
   │  POST /api/resources/[id]/favorite► guardar/quitar (sesión requerida)
   │  POST /api/opinions ──────────► opinión sobre la plataforma (con o sin cuenta)
+  │  PATCH /api/profile ──────────► perfil: nombre, bio, ubicación y enlaces
   │  GET /api/live  ──────────────► scraping del canal de YouTube (¿hay lives?)
   │                                 + histórico en Supabase + enriquecimiento
   │  POST /api/events ────────────► inserta evento anónimo en Supabase
@@ -57,7 +60,7 @@ Navegador (Next.js)
   │                                  playlists + stats
   ▼
 Supabase (Postgres + Auth)
-  ├── profiles       ← perfil por usuario + role (owner/admin/user)
+  ├── profiles       ← perfil por usuario: nombre, role, bio, ubicación y enlaces
   ├── categories, resources, playlist_items, resource_categories ← catálogo
   ├── resource_votes ← un voto por usuario/recurso (mantiene resources.vote_count)
   ├── resource_favorites ← lista privada de guardados por usuario

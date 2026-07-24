@@ -82,6 +82,9 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
               className="glass absolute right-0 z-50 mt-2 w-52 rounded-xl p-1.5 shadow-xl backdrop-blur-md"
             >
               <div className="truncate px-3 py-2 text-xs text-faint">{user.email}</div>
+              <MenuLink href="/perfil" onClick={() => setOpen(false)}>
+                Mi perfil
+              </MenuLink>
               <MenuLink href="/guardados" onClick={() => setOpen(false)}>
                 Guardados
               </MenuLink>

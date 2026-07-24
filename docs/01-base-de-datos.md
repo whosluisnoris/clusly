@@ -217,6 +217,66 @@ por hora y por usuario o sesión) y solo se lee con el service role en
 `/api/admin/opinions`, que exige rol de staff. Desde `/admin` → pestaña **Opiniones** se
 archiva lo ya leído o se borra.
 
+## Tabla `blog_posts` — artículos del blog
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | uuid (PK) | Autogenerado |
+| `slug` | text (único) | Parte de la URL (`/blog/<slug>`), derivada del título |
+| `title` | text | Título (CHECK: 3–160) |
+| `excerpt` | text | Resumen para la lista y al compartir (máx. 300) |
+| `content` | text | Cuerpo en Markdown básico |
+| `cover_url` | text | Portada, siempre del bucket `blog` (ver más abajo) |
+| `author_id` | uuid (FK → `profiles`, ON DELETE SET NULL) | Quién lo escribió |
+| `status` | text | `draft` \| `published` (CHECK en DB, default `draft`) |
+| `published_at` | timestamptz | Se fija la primera vez que se publica y ya no se mueve |
+| `created_at` / `updated_at` | timestamptz | |
+
+**Solo el staff escribe.** La tabla tiene una única política — `SELECT` público
+cuando `status = 'published'` — y **ninguna de escritura**: crear, editar, publicar y
+borrar pasa siempre por `/api/admin/blog`, que exige rol `owner`/`admin`
+(`authorizeAdmin`). Los borradores ni siquiera salen de la base para la anon key, así
+que las páginas públicas usan el cliente normal sin riesgo de filtrarlos.
+
+El slug se genera del título y **se congela al publicar**: renombrar un artículo ya
+publicado no cambia su URL, para no romper enlaces que ya circulan. Si dos títulos
+coinciden, se desempata con `-2`, `-3`…
+
+El contenido se pinta con [`Markdown`](../src/lib/markdown.tsx), un renderizador propio
+que devuelve **nodos de React** (nunca `dangerouslySetInnerHTML`), así que un artículo
+no puede inyectar HTML ni scripts; los enlaces e imágenes solo se pintan si son
+`http`/`https`.
+
+### Bucket `blog` — imágenes de los artículos
+
+Las imágenes viven en un bucket de **Supabase Storage** llamado `blog`:
+
+| Ajuste | Valor |
+|---|---|
+| Público | Sí — las imágenes se sirven por URL sin firmar (es lo que se pega en el artículo) |
+| Tamaño máximo | 5 MB por archivo |
+| Tipos | `image/png`, `jpeg`, `webp`, `gif`, `avif` |
+| Políticas de escritura | **Ninguna** |
+
+Que sea público es solo para **leer**. Como `storage.objects` no tiene ninguna política
+de escritura, la única forma de subir algo es el service role — y solo lo usa
+`/api/admin/blog/upload`, que exige rol owner/admin. Esa ruta repite los límites de
+tamaño y tipo, y **renombra el archivo** (`posts/<timestamp>-<aleatorio>.<ext>`) para
+que nunca se use el nombre original ni se pise una imagen existente.
+
+**Limpieza.** Nada se borra solo: quitar una portada o un artículo deja el archivo en el
+bucket. La pestaña Blog del panel tiene una vista del bucket (`/api/admin/blog/media`)
+que lista lo subido con su tamaño, fecha y los artículos que lo usan, y permite borrar a
+mano. Esa ruta comprueba el uso antes de borrar y devuelve **409** si la imagen sigue
+referenciada, salvo que se insista con `force`. Solo se puede borrar dentro de
+`posts/` — nunca fuera de la carpeta del blog.
+
+`cover_url` se valida al guardar **y al leer**: tiene que apuntar al bucket de este
+mismo proyecto, porque la portada se pinta con `next/image`, que solo sirve los hosts
+declarados en `next.config.ts` (el host de Supabase se deriva de
+`NEXT_PUBLIC_SUPABASE_URL`). Las imágenes dentro del texto, en cambio, se pintan con un
+`<img>` normal para que también funcione pegar una URL externa.
+
 ## Vista `watch_stats`
 
 Agregados por video: `plays`, `autoplays`, `youtube_opens`, `unique_sessions`,
@@ -234,6 +294,7 @@ Agregados por video: `plays`, `autoplays`, `youtube_opens`, `unique_sessions`,
 | `resource_votes` | RLS activo **sin políticas públicas**: el voto se procesa con el service role tras verificar la sesión |
 | `resource_favorites` | RLS activo **sin políticas públicas**: lista privada, se lee/escribe con el service role acotada por `user_id` |
 | `site_feedback` | RLS activo **sin políticas públicas**: se escribe desde `/api/opinions` y solo lo lee el staff vía `/api/admin/opinions` (buzón privado) |
+| `blog_posts` | RLS activo; `SELECT` público **solo de `status = 'published'`**; sin políticas de escritura — publicar/editar/borrar exige rol owner/admin vía `/api/admin/blog` |
 
 Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_ROLE_KEY`
 (nunca expuesta al navegador). Las rutas `/api/admin/*` autorizan por **rol de sesión**
@@ -281,3 +342,9 @@ Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_RO
 12. **`0005_perfil`** (`supabase/migrations/`): columnas `bio`, `location`, `links`
    (jsonb, default `[]`) y `updated_at` en `profiles`, con CHECKs de tamaño para
    que los límites se cumplan aunque se edite la fila desde el navegador.
+13. **`0006_blog`** (`supabase/migrations/`): tabla `blog_posts` con RLS y una sola
+   política (lectura pública de lo publicado). Sin políticas de escritura: el blog
+   solo se edita desde el panel con rol owner/admin.
+14. **`0007_blog_imagenes`** (`supabase/migrations/`): bucket de Storage `blog`
+   (público para leer, 5 MB, solo imágenes, sin políticas de escritura) y columna
+   `cover_url` en `blog_posts`.

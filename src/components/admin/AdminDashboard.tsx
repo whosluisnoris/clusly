@@ -6,12 +6,14 @@ import { StatsPanel } from "@/components/admin/StatsPanel";
 import { CategoriesManager } from "@/components/admin/CategoriesManager";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
 import { OpinionsManager } from "@/components/admin/OpinionsManager";
+import { BlogManager } from "@/components/admin/BlogManager";
 
-type Tab = "catalogo" | "platzi" | "stats" | "opiniones";
+type Tab = "catalogo" | "platzi" | "blog" | "stats" | "opiniones";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "catalogo", label: "Catálogo" },
   { key: "platzi", label: "Platzi Lives" },
+  { key: "blog", label: "Blog" },
   { key: "stats", label: "Estadísticas" },
   { key: "opiniones", label: "Opiniones" },
 ];
@@ -47,6 +49,7 @@ export function AdminDashboard() {
         </>
       )}
       {tab === "platzi" && <StreamsManager />}
+      {tab === "blog" && <BlogManager />}
       {tab === "stats" && <StatsPanel />}
       {tab === "opiniones" && <OpinionsManager />}
     </>

@@ -92,6 +92,43 @@ ubicación y hasta 6 enlaces con etiqueta. Guarda con `PATCH /api/profile` y ref
 página para que la barra y las opiniones firmadas vean el nombre nuevo. Los enlaces se
 abren con `rel="noopener noreferrer nofollow"` y solo si son `http`/`https`.
 
+## Blog
+
+**`/blog`** lista los artículos publicados (título, resumen, firma, fecha y minutos de
+lectura) y **`/blog/[slug]`** muestra uno, con `generateMetadata` propio para que al
+compartirlo salgan su título y su resumen en vez de los genéricos del sitio.
+
+**Escribirlo es exclusivo del staff**: la pestaña **Blog** de `/admin`
+([`BlogManager`](../src/components/admin/BlogManager.tsx)) es el único punto de entrada
+y todas sus llamadas van a `/api/admin/blog`, que vuelve a exigir rol `owner`/`admin`.
+Un artículo **nace como borrador** y no lo ve nadie hasta pulsar "Publicar"; se puede
+despublicar, editar y borrar desde la misma lista.
+
+El cuerpo se escribe en Markdown básico — encabezados, listas, citas, separadores,
+bloques de código, imágenes, **negrita**, *cursiva*, `código` y enlaces — y lo pinta
+[`Markdown`](../src/lib/markdown.tsx), que genera nodos de React en vez de HTML crudo.
+
+**Imágenes.** El editor tiene dos subidores, ambos contra el bucket `blog` de Supabase
+Storage (ver [01-base-de-datos.md](01-base-de-datos.md)):
+
+- **Portada**: se sube, se previsualiza y se puede cambiar o quitar. Sale en la lista
+  del blog (recorte 21:9), arriba del artículo (16:9) y como imagen de Open Graph al
+  compartirlo.
+- **Insertar imagen**: sube el archivo y pega `![](url)` justo donde está el cursor del
+  editor. Una imagen sola en su línea se pinta como figura y el texto alternativo hace
+  de pie de foto.
+
+**Vista del bucket.** Al final de la pestaña, "Ver imágenes subidas"
+([`BlogMedia`](../src/components/admin/BlogMedia.tsx)) lista todo lo que hay en el
+bucket con miniatura, peso, fecha y **en qué artículos se usa cada imagen**. De cada
+una se puede: ponerla de portada, insertarla en el texto que se está editando, copiar
+su URL o **borrarla del bucket**.
+
+El borrado es a mano y avisa antes: si la imagen está en uso, el aviso dice en cuántos
+artículos y solo entonces se manda con `force`. Si no parecía estar en uso, la API
+vuelve a comprobarlo del lado del servidor y responde **409** si cambió mientras tanto,
+así que no hay forma de romper un artículo publicado por una lista desactualizada.
+
 ## Aportar sin cuenta
 
 `/enviar` ya no exige sesión para entrar. Se llena la URL y las categorías, y al

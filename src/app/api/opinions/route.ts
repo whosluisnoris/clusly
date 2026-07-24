@@ -11,9 +11,10 @@ const SESSION_RE = /^[A-Za-z0-9-]{8,64}$/;
 // del navegador si no hay cuenta).
 const MAX_PER_HOUR = 3;
 
-// POST /api/opinions — publica una opinión sobre la plataforma.
+// POST /api/opinions — deja una opinión sobre la plataforma.
 // body: { sentiment, message, sessionId }. Funciona con o sin cuenta: con
 // sesión la opinión va firmada con el nombre visible; sin ella, anónima.
+// No se publica en ningún lado: solo se lee desde /admin → Opiniones.
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
 
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json(
-      { error: "No se pudo publicar tu opinión, inténtalo de nuevo." },
+      { error: "No se pudo enviar tu opinión, inténtalo de nuevo." },
       { status: 500 }
     );
   }

@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { getSessionId } from "@/lib/analytics";
 import { SENTIMENTS, SENTIMENT_META, MAX_MESSAGE, type Sentiment } from "@/lib/opinions";
 
 // Formulario de la sección de opiniones: cómo te sientes + qué quieres contar.
-// Funciona sin cuenta (la opinión sale como "Anónimo"); con sesión va firmada
-// con el nombre visible. Tras publicar, refresca la página para que la opinión
-// recién enviada aparezca en la lista (que se pinta en el servidor).
+// Funciona sin cuenta (llega como "Anónimo"); con sesión va firmada con el
+// nombre visible para poder darle seguimiento. No se publica en ningún lado:
+// el mensaje va directo al buzón del equipo (/admin → Opiniones).
 export function OpinionForm({
   displayName,
 }: {
@@ -20,7 +19,6 @@ export function OpinionForm({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
-  const router = useRouter();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,15 +45,14 @@ export function OpinionForm({
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo publicar tu opinión.");
+        setError(data.error ?? "No se pudo enviar tu opinión.");
         return;
       }
       setSent(true);
       setMessage("");
       setSentiment(null);
-      router.refresh();
     } catch {
-      setError("No se pudo publicar tu opinión, revisa tu conexión.");
+      setError("No se pudo enviar tu opinión, revisa tu conexión.");
     } finally {
       setSending(false);
     }
@@ -68,7 +65,7 @@ export function OpinionForm({
           ¡Gracias por escribir! 💚
         </p>
         <p className="mt-1.5 text-sm text-muted">
-          Tu opinión ya está abajo y la leemos toda.
+          Ya nos llegó tu mensaje. Lo leemos todo.
         </p>
         <button
           type="button"
@@ -130,11 +127,11 @@ export function OpinionForm({
         <p className="text-xs text-muted">
           {displayName ? (
             <>
-              Se publicará como <b className="text-foreground">{displayName}</b>.
+              Se enviará firmada como <b className="text-foreground">{displayName}</b>.
             </>
           ) : (
             <>
-              Se publicará como <b className="text-foreground">Anónimo</b>.{" "}
+              Se enviará como <b className="text-foreground">Anónimo</b>.{" "}
               <Link
                 href="/entrar?next=/opiniones"
                 className="text-accent-ink underline underline-offset-2"
@@ -154,7 +151,7 @@ export function OpinionForm({
             disabled={sending}
             className="brand-gradient rounded-full px-5 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:opacity-60"
           >
-            {sending ? "Publicando…" : "Publicar opinión"}
+            {sending ? "Enviando…" : "Enviar opinión"}
           </button>
         </div>
       </div>

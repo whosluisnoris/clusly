@@ -199,22 +199,23 @@ ve lo que guardaron los demás y no afecta al puntaje del catálogo.
 | `session_id` | text | Misma sesión anónima de la analítica (antiflood sin cuenta) |
 | `sentiment` | text | `me_encanta` \| `puede_mejorar` \| `no_me_convence` (CHECK en DB) |
 | `message` | text | Texto de la opinión (CHECK: 1–1000 caracteres) |
-| `hidden_at` | timestamptz | Si tiene valor, el staff la ocultó de `/opiniones` |
+| `hidden_at` | timestamptz | Si tiene valor, el staff ya la archivó (leída) |
 | `created_at` | timestamptz | |
 
-Alimenta la sección pública `/opiniones` (ver [03-interfaz.md](03-interfaz.md)). Es
-distinta de `feedback_votes`: aquella es una **pregunta cerrada** de una sola respuesta
-por sesión; esta es **texto libre publicable**, firmado con el `display_name` de quien
-lo escribe o como "Anónimo".
+Es el buzón de `/opiniones` (ver [03-interfaz.md](03-interfaz.md)): **nada de esto se
+publica**. Se escribe desde la página y solo se lee en `/admin` → Opiniones. Es distinta
+de `feedback_votes`: aquella es una **pregunta cerrada** de una sola respuesta por
+sesión; esta es texto libre, firmado con el `display_name` de quien lo escribe o como
+"Anónimo".
 
 `user_id` apunta a `profiles` (no a `auth.users`) para que PostgREST pueda embeber el
 nombre del autor en una sola consulta; como `profiles.id` ya cae en cascada con la
 cuenta, borrar un usuario deja sus opiniones como anónimas en vez de borrarlas.
 
-RLS activo **sin políticas públicas**: se lee desde Server Components con el service
-role filtrando `hidden_at is null`, y se escribe en `/api/opinions` (máx. 3 opiniones
-por hora y por usuario o sesión). Moderación desde `/admin` → pestaña **Opiniones**
-(ocultar/mostrar/borrar).
+RLS activo **sin políticas públicas**: se escribe en `/api/opinions` (máx. 3 opiniones
+por hora y por usuario o sesión) y solo se lee con el service role en
+`/api/admin/opinions`, que exige rol de staff. Desde `/admin` → pestaña **Opiniones** se
+archiva lo ya leído o se borra.
 
 ## Vista `watch_stats`
 
@@ -232,7 +233,7 @@ Agregados por video: `plays`, `autoplays`, `youtube_opens`, `unique_sessions`,
 | `profiles` | RLS activo; `SELECT` público; el usuario puede actualizar su fila (no la columna `role`, revocada); solo el service role cambia roles |
 | `resource_votes` | RLS activo **sin políticas públicas**: el voto se procesa con el service role tras verificar la sesión |
 | `resource_favorites` | RLS activo **sin políticas públicas**: lista privada, se lee/escribe con el service role acotada por `user_id` |
-| `site_feedback` | RLS activo **sin políticas públicas**: se lee con el service role filtrando `hidden_at is null`; se escribe desde `/api/opinions` |
+| `site_feedback` | RLS activo **sin políticas públicas**: se escribe desde `/api/opinions` y solo lo lee el staff vía `/api/admin/opinions` (buzón privado) |
 
 Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_ROLE_KEY`
 (nunca expuesta al navegador). Las rutas `/api/admin/*` autorizan por **rol de sesión**

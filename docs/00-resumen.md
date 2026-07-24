@@ -20,8 +20,8 @@ videos dispersos.
   [08-cuentas-votacion-setup.md](08-cuentas-votacion-setup.md).
 - **Guardados (`/guardados`)**: cada tarjeta tiene un corazón al pasar el cursor;
   lo guardado forma una lista privada del usuario.
-- **Opiniones (`/opiniones`)**: sección de feedback abierta (con o sin cuenta) con
-  el termómetro de la comunidad y moderación desde el panel.
+- **Opiniones (`/opiniones`)**: buzón de feedback abierto a cualquiera (con o sin
+  cuenta). Lo que se escribe **no se publica**: se lee solo desde el panel.
 - **Perfil (`/perfil`)**: los datos de la cuenta, biografía, ubicación y enlaces
   editables, más el resumen de actividad del usuario.
 - **Roles** (`owner` / `admin` / `user`): el panel `/admin` se abre por el rol de la
@@ -51,7 +51,7 @@ Navegador (Next.js)
   │  POST /api/resources ─────────► envío de la comunidad (sin sesión: pendiente)
   │  POST /api/resources/[id]/vote► voto +/− (sesión requerida)
   │  POST /api/resources/[id]/favorite► guardar/quitar (sesión requerida)
-  │  POST /api/opinions ──────────► opinión sobre la plataforma (con o sin cuenta)
+  │  POST /api/opinions ──────────► opinión al buzón privado (con o sin cuenta)
   │  PATCH /api/profile ──────────► perfil: nombre, bio, ubicación y enlaces
   │  GET /api/live  ──────────────► scraping del canal de YouTube (¿hay lives?)
   │                                 + histórico en Supabase + enriquecimiento
@@ -64,7 +64,7 @@ Supabase (Postgres + Auth)
   ├── categories, resources, playlist_items, resource_categories ← catálogo
   ├── resource_votes ← un voto por usuario/recurso (mantiene resources.vote_count)
   ├── resource_favorites ← lista privada de guardados por usuario
-  ├── site_feedback  ← opiniones publicables (con moderación)
+  ├── site_feedback  ← buzón privado de opiniones (solo lo lee el staff)
   ├── streams        ← histórico de lives (con fechas y estado en vivo)
   ├── watch_events   ← eventos de analítica
   └── watch_stats    ← vista con los agregados

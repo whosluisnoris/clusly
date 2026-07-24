@@ -13,7 +13,7 @@ interface AdminOpinionRow {
   profiles: { display_name: string | null } | null;
 }
 
-// GET /api/admin/opinions — todas las opiniones, incluidas las ocultas
+// GET /api/admin/opinions — el buzón completo, incluidas las archivadas
 export async function GET(request: NextRequest) {
   if (!(await authorizeAdmin(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ opinions });
 }
 
-// PATCH /api/admin/opinions — oculta o vuelve a mostrar una opinión.
+// PATCH /api/admin/opinions — archiva una opinión ya leída, o la restaura.
 // body: { id, hidden: boolean }
 export async function PATCH(request: NextRequest) {
   if (!(await authorizeAdmin(request))) {

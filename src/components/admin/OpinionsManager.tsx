@@ -13,16 +13,17 @@ interface AdminOpinion {
   createdAt: string;
 }
 
-type Filter = "todas" | "visibles" | "ocultas";
+type Filter = "todas" | "pendientes" | "archivadas";
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "todas", label: "Todas" },
-  { key: "visibles", label: "Visibles" },
-  { key: "ocultas", label: "Ocultas" },
+  { key: "pendientes", label: "Sin archivar" },
+  { key: "archivadas", label: "Archivadas" },
 ];
 
-// Panel de opiniones: lee lo que escribe la gente en /opiniones y modera lo que
-// no deba mostrarse (ocultar la quita de la página pública sin borrarla).
+// Buzón de opiniones: lo que la gente escribe en /opiniones llega aquí y solo
+// aquí (la página pública no muestra nada). Archivar es para marcar las que ya
+// leíste, sin borrarlas; borrar sí es definitivo.
 export function OpinionsManager() {
   const [opinions, setOpinions] = useState<AdminOpinion[]>([]);
   const [filter, setFilter] = useState<Filter>("todas");
@@ -58,7 +59,7 @@ export function OpinionsManager() {
         prev.map((o) => (o.id === id ? { ...o, hidden } : o))
       );
     } else {
-      setError("No se pudo actualizar la opinión.");
+      setError("No se pudo archivar la opinión.");
     }
     setBusyId(null);
   }
@@ -79,9 +80,9 @@ export function OpinionsManager() {
     setBusyId(null);
   }
 
-  const visible = opinions.filter((o) => !o.hidden);
+  const activas = opinions.filter((o) => !o.hidden);
   const shown = opinions.filter((o) =>
-    filter === "todas" ? true : filter === "visibles" ? !o.hidden : o.hidden
+    filter === "todas" ? true : filter === "pendientes" ? !o.hidden : o.hidden
   );
 
   return (
@@ -98,13 +99,13 @@ export function OpinionsManager() {
         </button>
       </div>
 
-      {/* Reparto de sentimientos entre las opiniones visibles */}
+      {/* Reparto de sentimientos entre las opiniones sin archivar */}
       <div className="mb-6 flex flex-wrap gap-3">
         {SENTIMENTS.map((value) => {
           const { emoji, label } = SENTIMENT_META[value];
-          const count = visible.filter((o) => o.sentiment === value).length;
+          const count = activas.filter((o) => o.sentiment === value).length;
           const pct =
-            visible.length > 0 ? Math.round((count / visible.length) * 100) : 0;
+            activas.length > 0 ? Math.round((count / activas.length) * 100) : 0;
           return (
             <div
               key={value}
@@ -168,7 +169,7 @@ export function OpinionsManager() {
                   </span>
                   {o.hidden && (
                     <span className="rounded-full bg-fill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-faint">
-                      Oculta
+                      Archivada
                     </span>
                   )}
                 </div>
@@ -183,7 +184,7 @@ export function OpinionsManager() {
                     disabled={busyId === o.id}
                     className="font-semibold text-accent-ink transition hover:underline disabled:opacity-50"
                   >
-                    {o.hidden ? "Mostrar" : "Ocultar"}
+                    {o.hidden ? "Restaurar" : "Archivar"}
                   </button>
                   <button
                     onClick={() => remove(o.id)}

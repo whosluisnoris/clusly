@@ -68,11 +68,15 @@ ahí, la tarjeta desaparece de la cuadrícula (`ResourceGrid` con `removeOnUnsav
 
 ## Opiniones
 
-**`/opiniones`** es la sección de feedback abierta: un termómetro con el reparto de
-sentimientos, el formulario y lo que ha escrito la comunidad. Se puede opinar **sin
-cuenta** (sale como "Anónimo") o con sesión (firmada con el nombre visible); hay un
-límite de 3 opiniones por hora y persona. El staff modera desde `/admin` → pestaña
-**Opiniones** (ocultar / mostrar / borrar). Enlazada desde la barra y el pie de página.
+**`/opiniones`** es un **buzón privado**, no un muro público: la página solo tiene el
+formulario (sentimiento + texto libre) y nadie ve lo que escribieron los demás — ni los
+mensajes ni los conteos. Se puede opinar **sin cuenta** (llega como "Anónimo") o con
+sesión (firmada con el nombre visible, para poder dar seguimiento); hay un límite de 3
+por hora y persona.
+
+Todo se lee desde `/admin` → pestaña **Opiniones**, con el reparto de sentimientos
+arriba. Ahí se puede **archivar** lo ya leído (`hidden_at`, reversible) o borrarlo
+definitivamente. Enlazada desde la barra y el pie de página.
 
 ## Perfil
 

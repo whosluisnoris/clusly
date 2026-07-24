@@ -14,9 +14,14 @@ videos dispersos.
   en la URL. Cada tarjeta muestra sus categorías. Al abrir un recurso se reproduce
   en un `<iframe>` de YouTube; las playlists muestran reproductor + lista de episodios.
 - **Cuentas, envíos y votación**: registro/login con confirmación por correo
-  (Supabase Auth + Resend). Los usuarios aportan videos (`/enviar`), la comunidad
-  vota (+/−) y ese puntaje ordena el catálogo. Ver
+  (Supabase Auth + Resend). Cualquiera aporta videos (`/enviar`) — sin cuenta el
+  aporte queda pendiente de aprobación —, la comunidad vota (+/−) y ese puntaje
+  ordena el catálogo. Ver
   [08-cuentas-votacion-setup.md](08-cuentas-votacion-setup.md).
+- **Guardados (`/guardados`)**: cada tarjeta tiene un corazón al pasar el cursor;
+  lo guardado forma una lista privada del usuario.
+- **Opiniones (`/opiniones`)**: sección de feedback abierta (con o sin cuenta) con
+  el termómetro de la comunidad y moderación desde el panel.
 - **Roles** (`owner` / `admin` / `user`): el panel `/admin` se abre por el rol de la
   sesión (no por contraseña); ahí se gestionan categorías, recursos y lives, más
   estadísticas.
@@ -41,8 +46,10 @@ en iframes; la plataforma solo organiza enlaces públicos) y sin API de Google
 Navegador (Next.js)
   │  Catálogo (Server Components) ─► lectura directa de Supabase (RLS público)
   │  /api/auth/* + Send Email Hook► registro/login (Supabase Auth) + correo (Resend)
-  │  POST /api/resources ─────────► envío de la comunidad (sesión requerida)
+  │  POST /api/resources ─────────► envío de la comunidad (sin sesión: pendiente)
   │  POST /api/resources/[id]/vote► voto +/− (sesión requerida)
+  │  POST /api/resources/[id]/favorite► guardar/quitar (sesión requerida)
+  │  POST /api/opinions ──────────► opinión sobre la plataforma (con o sin cuenta)
   │  GET /api/live  ──────────────► scraping del canal de YouTube (¿hay lives?)
   │                                 + histórico en Supabase + enriquecimiento
   │  POST /api/events ────────────► inserta evento anónimo en Supabase
@@ -53,6 +60,8 @@ Supabase (Postgres + Auth)
   ├── profiles       ← perfil por usuario + role (owner/admin/user)
   ├── categories, resources, playlist_items, resource_categories ← catálogo
   ├── resource_votes ← un voto por usuario/recurso (mantiene resources.vote_count)
+  ├── resource_favorites ← lista privada de guardados por usuario
+  ├── site_feedback  ← opiniones publicables (con moderación)
   ├── streams        ← histórico de lives (con fechas y estado en vivo)
   ├── watch_events   ← eventos de analítica
   └── watch_stats    ← vista con los agregados

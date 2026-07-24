@@ -6,6 +6,7 @@ import {
 } from "@/lib/catalog";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserVotes } from "@/lib/votes";
+import { getUserFavorites } from "@/lib/favorites";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { catColor } from "@/lib/color";
 import { CategoryIcon } from "@/components/CategoryIcon";
@@ -25,9 +26,10 @@ export default async function CategoryPage({
   const resources = await getResourcesByCategory(category.id);
   const user = await getCurrentUser();
   const resourceIds = resources.map((r) => r.id);
-  const [userVotes, categoriesByResource] = await Promise.all([
+  const [userVotes, categoriesByResource, favorites] = await Promise.all([
     user ? getUserVotes(user.id, resourceIds) : Promise.resolve<Record<string, number>>({}),
     getCategoriesForResources(resourceIds),
+    user ? getUserFavorites(user.id, resourceIds) : Promise.resolve(new Set<string>()),
   ]);
   const color = catColor(category.color);
 
@@ -55,6 +57,7 @@ export default async function CategoryPage({
         accent={color}
         userVotes={userVotes}
         categoriesByResource={categoriesByResource}
+        favorites={favorites}
         canVote={!!user}
         empty="Aún no hay recursos en esta categoría. Pronto agregaremos más."
       />

@@ -7,15 +7,24 @@ import {
 } from "@/lib/catalog";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserVote } from "@/lib/votes";
+import { isFavorite } from "@/lib/favorites";
 import { resourceToPlayable, playlistItemToPlayable } from "@/lib/playable";
 import { ResourceDetail } from "@/components/ResourceDetail";
 import { VoteControl } from "@/components/VoteControl";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import type { Playable } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-// Etiqueta y destino del enlace "volver", según el origen (?from=slug|todo).
+// Orígenes que no son una categoría (páginas propias del usuario).
+const OWN_PAGES: Record<string, { href: string; label: string }> = {
+  guardados: { href: "/guardados", label: "Guardados" },
+  "mis-videos": { href: "/mis-videos", label: "Mis videos" },
+};
+
+// Etiqueta y destino del enlace "volver", según el origen (?from=slug|todo|…).
 async function backTarget(from: string | undefined) {
+  if (from && OWN_PAGES[from]) return OWN_PAGES[from];
   if (from && from !== "todo") {
     const cat = await getCategoryBySlug(from);
     if (cat) return { href: `/categoria/${cat.slug}`, label: cat.name };
@@ -44,7 +53,12 @@ export default async function ResourcePage({
   const main = resourceToPlayable(resource);
   const back = await backTarget(from);
   const user = await getCurrentUser();
-  const userVote = user ? await getUserVote(user.id, resource.id) : 0;
+  const [userVote, saved] = user
+    ? await Promise.all([
+        getUserVote(user.id, resource.id),
+        isFavorite(user.id, resource.id),
+      ])
+    : [0, false];
 
   return (
     <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 sm:px-8">
@@ -62,6 +76,12 @@ export default async function ResourcePage({
           initialVote={userVote}
           canVote={!!user}
           size="lg"
+        />
+        <FavoriteButton
+          resourceId={resource.id}
+          initialSaved={saved}
+          canSave={!!user}
+          variant="inline"
         />
         <span className="text-sm text-muted">
           ¿Te sirvió? Vótalo para que más gente lo encuentre.

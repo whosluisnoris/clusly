@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getActiveCategories } from "@/lib/catalog";
 import { SubmitForm } from "@/components/SubmitForm";
@@ -7,11 +6,13 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Aportar video" };
 
+// Abierta a todo el mundo: se puede llenar el formulario sin cuenta y la sesión
+// se pide al confirmar (o el aporte queda pendiente de aprobación).
 export default async function EnviarPage() {
-  const user = await getCurrentUser();
-  if (!user) redirect("/entrar?next=/enviar");
-
-  const categories = await getActiveCategories();
+  const [user, categories] = await Promise.all([
+    getCurrentUser(),
+    getActiveCategories(),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-8">
@@ -25,13 +26,14 @@ export default async function EnviarPage() {
             Aportar un video
           </h1>
           <p className="mt-1.5 text-sm text-muted">
-            ¿Un video que te ayudó a aprender? Compártelo con la comunidad. Aparece
-            al instante y la gente lo hace subir con sus votos.
+            {user
+              ? "¿Un video que te ayudó a aprender? Compártelo con la comunidad. Aparece al instante y la gente lo hace subir con sus votos."
+              : "¿Un video que te ayudó a aprender? Compártelo con la comunidad. Llena esto sin cuenta: te la pedimos hasta el final, y tu borrador no se pierde."}
           </p>
         </div>
       </div>
 
-      <SubmitForm categories={categories} />
+      <SubmitForm categories={categories} loggedIn={!!user} />
     </main>
   );
 }

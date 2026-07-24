@@ -75,6 +75,15 @@ export async function PATCH(request: NextRequest) {
   if (typeof body.title === "string" && body.title.trim()) updates.title = body.title.trim();
   if (typeof body.description === "string")
     updates.description = body.description.trim() || null;
+  // Moderación: aprobar un aporte pendiente ('published'), ocultarlo o
+  // devolverlo a la cola.
+  if (
+    body.status === "published" ||
+    body.status === "pending" ||
+    body.status === "hidden"
+  ) {
+    updates.status = body.status;
+  }
   if (Object.keys(updates).length > 0) {
     const { error } = await admin.from("resources").update(updates).eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

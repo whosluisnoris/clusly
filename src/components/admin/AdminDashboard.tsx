@@ -5,13 +5,15 @@ import { StreamsManager } from "@/components/admin/StreamsManager";
 import { StatsPanel } from "@/components/admin/StatsPanel";
 import { CategoriesManager } from "@/components/admin/CategoriesManager";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
+import { OpinionsManager } from "@/components/admin/OpinionsManager";
 
-type Tab = "catalogo" | "platzi" | "stats";
+type Tab = "catalogo" | "platzi" | "stats" | "opiniones";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "catalogo", label: "Catálogo" },
   { key: "platzi", label: "Platzi Lives" },
   { key: "stats", label: "Estadísticas" },
+  { key: "opiniones", label: "Opiniones" },
 ];
 
 // Cuerpo del panel admin (pestañas + managers). La autorización ya la resolvió
@@ -46,6 +48,7 @@ export function AdminDashboard() {
       )}
       {tab === "platzi" && <StreamsManager />}
       {tab === "stats" && <StatsPanel />}
+      {tab === "opiniones" && <OpinionsManager />}
     </>
   );
 }

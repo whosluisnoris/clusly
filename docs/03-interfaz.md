@@ -28,6 +28,8 @@ En móvil las columnas se apilan (reproductor arriba). Rejilla:
 | `VideoListItem` | Tarjeta horizontal de la lista (miniatura 160px con fallback a `hqdefault`, título 2 líneas, canal, fecha relativa); resalta el video activo; insignias "EN VIVO" (rojo) y "24/7" (verde) |
 | `StatusBadge` | Insignia "EN VIVO" (roja, convención universal; el verde Platzi queda para acciones) |
 | `FeedbackPoll` | Encuesta flotante en la esquina inferior derecha, con cierre y pastilla "📊 Encuesta" para reabrir (ver [04-analitica.md](04-analitica.md)) |
+| `FavoriteButton` | Corazón para guardar un video/playlist. En la tarjeta flota en la esquina y solo aparece al pasar el cursor (en móvil siempre, porque no hay hover); en el detalle es una pastilla "Guardar/Guardado" |
+| `OpinionForm` | Formulario de `/opiniones`: sentimiento (😍/🤔/😕) + texto libre. Funciona sin cuenta (se publica como "Anónimo") |
 | `DailyChart` | Gráfica SVG de barras apiladas por día, usada en `/admin` |
 
 Las tarjetas muestran "hace 3 semanas · 3 h 58 min" (fecha relativa + duración del
@@ -46,10 +48,38 @@ video); el reproductor añade además la fecha absoluta.
   catálogo (miniatura + título + canal). Al pie muestra **las categorías** del recurso
   (hasta 2, con "+N" si hay más); los datos los inyecta cada página vía
   `getCategoriesForResources` (`src/lib/catalog.ts`) y `ResourceGrid`.
-- **`AuthNav`**: sin sesión muestra "Crear cuenta" (CTA) y "Entrar"; con sesión, botón
-  "Aportar video" + menú con "Mis videos" y "Cerrar sesión".
+- **`AuthNav`**: sin sesión muestra "Aportar video", "Entrar" y "Crear cuenta" (CTA);
+  con sesión, botón "Aportar video" + menú con "Guardados", "Mis videos" y "Cerrar
+  sesión".
 - **`ExploreFilters`** (`/todo`): filtros de categoría (chips) + orden (más votados /
   recientes), con el estado en la URL (`?cat=…&sort=…`).
+
+## Guardados (favoritos)
+
+Cada tarjeta lleva un **corazón** en la esquina superior derecha
+([`FavoriteButton`](../src/components/FavoriteButton.tsx)): aparece al pasar el cursor
+sobre la tarjeta y se queda fijo si el recurso ya está guardado. Vive **fuera** del
+`<Link>` de la tarjeta (nunca un `<button>` dentro de un `<a>`) y actualiza optimista,
+revirtiendo si el servidor falla. Sin sesión, el clic lleva a `/entrar?next=…`.
+
+La lista personal está en **`/guardados`**: es privada (nadie ve lo de los demás), no
+afecta al puntaje del catálogo y se ordena por cuándo se guardó. Al quitar el corazón
+ahí, la tarjeta desaparece de la cuadrícula (`ResourceGrid` con `removeOnUnsave`).
+
+## Opiniones
+
+**`/opiniones`** es la sección de feedback abierta: un termómetro con el reparto de
+sentimientos, el formulario y lo que ha escrito la comunidad. Se puede opinar **sin
+cuenta** (sale como "Anónimo") o con sesión (firmada con el nombre visible); hay un
+límite de 3 opiniones por hora y persona. El staff modera desde `/admin` → pestaña
+**Opiniones** (ocultar / mostrar / borrar). Enlazada desde la barra y el pie de página.
+
+## Aportar sin cuenta
+
+`/enviar` ya no exige sesión para entrar. Se llena la URL y las categorías, y al
+confirmar aparece un paso que ofrece crear cuenta (el aporte se publica al instante) o
+mandarlo **sin cuenta**, en cuyo caso queda **pendiente de aprobación**. El borrador se
+guarda en `localStorage`, así que irse a `/entrar` y volver no pierde nada.
 
 ## Paleta, tema claro/oscuro y color por categoría
 

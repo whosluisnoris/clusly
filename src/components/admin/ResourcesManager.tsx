@@ -26,6 +26,9 @@ export function ResourcesManager() {
   // Gestión de episodios de una playlist
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Moderación: la cola de aportes que llegaron sin cuenta
+  const [onlyPending, setOnlyPending] = useState(false);
+
   const headers = { "Content-Type": "application/json" };
 
   const load = useCallback(async () => {
@@ -44,6 +47,8 @@ export function ResourcesManager() {
 
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? "?";
   const detected = parseYouTubeUrl(url);
+  const pending = resources.filter((r) => r.status === "pending");
+  const shown = onlyPending ? pending : resources;
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -87,6 +92,16 @@ export function ResourcesManager() {
       body: JSON.stringify({ id, categoryIds: editCats }),
     });
     setEditId(null);
+    await load();
+  }
+
+  // Aprobar / ocultar / devolver a la cola un recurso.
+  async function changeStatus(id: string, next: "published" | "pending" | "hidden") {
+    await fetch("/api/admin/resources", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ id, status: next }),
+    });
     await load();
   }
 
@@ -163,14 +178,36 @@ export function ResourcesManager() {
         </p>
       )}
 
+      {/* Cola de moderación: aportes enviados sin cuenta */}
+      {pending.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-500/10 px-4 py-3 ring-1 ring-amber-500/30">
+          <p className="text-sm text-foreground">
+            <b>
+              {pending.length} {pending.length === 1 ? "aporte" : "aportes"} pendientes
+            </b>{" "}
+            <span className="text-muted">
+              de aprobación (llegaron sin cuenta y no se ven en el catálogo).
+            </span>
+          </p>
+          <button
+            onClick={() => setOnlyPending((v) => !v)}
+            className="rounded-lg border border-amber-500/40 px-3 py-1.5 text-xs font-semibold text-amber-500 transition hover:bg-amber-500/10"
+          >
+            {onlyPending ? "Ver todos" : "Revisar pendientes"}
+          </button>
+        </div>
+      )}
+
       {/* Tabla de recursos */}
-      {resources.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="text-sm text-muted">
-          Aún no hay recursos. Pega arriba la URL de un video o una playlist de YouTube.
+          {resources.length === 0
+            ? "Aún no hay recursos. Pega arriba la URL de un video o una playlist de YouTube."
+            : "No hay aportes pendientes."}
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {resources.map((r) => (
+          {shown.map((r) => (
             <li key={r.id} className="rounded-xl bg-surface ring-1 ring-border">
               <div className="flex items-start justify-between gap-3 p-4">
                 <div className="min-w-0">
@@ -184,6 +221,16 @@ export function ResourcesManager() {
                     >
                       {r.kind === "playlist" ? `Playlist · ${r.video_count ?? 0}` : "Video"}
                     </span>
+                    {r.status === "pending" && (
+                      <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-500">
+                        Pendiente
+                      </span>
+                    )}
+                    {r.status === "hidden" && (
+                      <span className="rounded bg-fill-strong px-1.5 py-0.5 text-[10px] font-bold uppercase text-faint">
+                        Oculto
+                      </span>
+                    )}
                     <span className="truncate">{r.title}</span>
                   </p>
                   <p className="mt-0.5 truncate text-xs text-faint">
@@ -242,6 +289,28 @@ export function ResourcesManager() {
                 </div>
 
                 <div className="flex shrink-0 flex-col items-end gap-2">
+                  {r.status === "pending" ? (
+                    <button
+                      onClick={() => changeStatus(r.id, "published")}
+                      className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-on-accent transition hover:opacity-90"
+                    >
+                      Aprobar
+                    </button>
+                  ) : r.status === "hidden" ? (
+                    <button
+                      onClick={() => changeStatus(r.id, "published")}
+                      className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs text-accent-ink transition hover:bg-accent/10"
+                    >
+                      Publicar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => changeStatus(r.id, "hidden")}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill"
+                    >
+                      Ocultar
+                    </button>
+                  )}
                   <button
                     onClick={() => remove(r.id, r.title)}
                     className="rounded-lg border border-red-800/50 px-3 py-1.5 text-xs text-red-400 hover:bg-red-900/30 transition"

@@ -7,9 +7,11 @@ import type { ResourceRow } from "@/lib/types";
 import type { CategoryTag } from "@/lib/catalog";
 import { formatDuration, timeAgo } from "@/lib/dates";
 import { VoteControl } from "@/components/VoteControl";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 // Tarjeta del catálogo (grid). El enlace envuelve la miniatura y el título; el
-// control de voto vive en un pie aparte para no anidar botones dentro de un <a>.
+// control de voto y el corazón de guardar viven fuera de él para no anidar
+// botones dentro de un <a>.
 // `accent` (color de la categoría) tiñe el marco y el distintivo de tipo.
 // `categories` muestra a qué filtro(s) pertenece el video.
 export function ResourceCard({
@@ -19,6 +21,8 @@ export function ResourceCard({
   userVote,
   canVote = false,
   categories,
+  saved = false,
+  removeOnUnsave = false,
 }: {
   resource: ResourceRow;
   from?: string;
@@ -26,6 +30,8 @@ export function ResourceCard({
   userVote?: number;
   canVote?: boolean;
   categories?: CategoryTag[];
+  saved?: boolean;
+  removeOnUnsave?: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
   const thumbnailUrl = imgError
@@ -51,6 +57,15 @@ export function ResourceCard({
         className="h-1 w-full shrink-0"
         style={{ backgroundColor: line }}
         aria-hidden="true"
+      />
+
+      {/* Corazón de guardar: aparece al pasar el cursor sobre la tarjeta.
+          `canVote` indica que hay sesión, así que sirve para ambas acciones. */}
+      <FavoriteButton
+        resourceId={resource.id}
+        initialSaved={saved}
+        canSave={canVote}
+        removeOnUnsave={removeOnUnsave}
       />
 
       <Link href={href} className="flex flex-1 flex-col">

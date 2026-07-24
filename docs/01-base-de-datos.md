@@ -127,8 +127,12 @@ de puesta en marcha en [08-cuentas-votacion-setup.md](08-cuentas-votacion-setup.
 | Columna | Tipo | Descripción |
 |---|---|---|
 | `id` | uuid (PK, FK → `auth.users`, ON DELETE CASCADE) | Mismo id que la cuenta |
-| `display_name` | text | Nombre visible (de los metadatos del registro) |
+| `display_name` | text | Nombre visible (de los metadatos del registro; máx. 60) |
 | `role` | text | `owner` \| `admin` \| `user` (CHECK en DB, default `user`) |
+| `bio` | text | Biografía del perfil (máx. 300) |
+| `location` | text | Ubicación libre (máx. 80) |
+| `links` | jsonb | Arreglo de `{label, url}` (máx. 6), solo http/https |
+| `updated_at` | timestamptz | Última edición del perfil |
 | `created_at` | timestamptz | |
 
 Se crea sola al registrarse (trigger `on_auth_user_created` → `handle_new_user`). El
@@ -136,13 +140,27 @@ rol define el acceso al panel: `owner` y `admin` son "staff" (`isStaff()` en
 `src/lib/auth.ts`). **Nadie puede auto-asignarse un rol**: se revocó el `UPDATE` de la
 columna `role` a `anon`/`authenticated`; solo el service role (servidor) la cambia.
 
+Los campos del perfil (`bio`, `location`, `links`) se editan en `/perfil` vía
+`PATCH /api/profile`. Como la política `profiles self update` permite además editar la
+fila desde el navegador, los topes de tamaño viven **también en la base** (CHECKs) y los
+enlaces se validan dos veces: al guardar y al pintarlos (solo `http`/`https`, nunca
+`javascript:`). El nombre visible se escribe en `profiles.display_name` **y** en los
+metadatos de la cuenta, que es de donde lo lee `getCurrentUser`.
+
 ### Nuevas columnas en `resources`
 
 | Columna | Tipo | Descripción |
 |---|---|---|
-| `submitted_by` | uuid (FK → `auth.users`, ON DELETE SET NULL) | Quién aportó el recurso (`null` = curado por el equipo) |
-| `status` | text | `published` \| `hidden` (CHECK; default `published`). El catálogo público solo ve `published` |
+| `submitted_by` | uuid (FK → `auth.users`, ON DELETE SET NULL) | Quién aportó el recurso (`null` = curado por el equipo o aporte sin cuenta) |
+| `submitted_session` | text | Sesión anónima que mandó un aporte sin cuenta (solo para el antiflood) |
+| `status` | text | `published` \| `pending` \| `hidden` (CHECK; default `published`). El catálogo público solo ve `published` |
 | `vote_count` | integer | Suma de votos; la mantiene un trigger (default 0) |
+
+**Aportes sin cuenta.** `/enviar` está abierto a todo el mundo: se llena la URL y las
+categorías sin sesión y esta se pide al confirmar. Quien no quiera crear cuenta puede
+mandarlo igual — el recurso entra con `status = 'pending'`, invisible en el catálogo
+(la política pública filtra `published`), hasta que el staff lo apruebe desde `/admin`
+→ **Catálogo** → "Revisar pendientes". Máximo 3 aportes anónimos por hora y navegador.
 
 ### Tabla `resource_votes` — un voto por usuario/recurso
 
@@ -157,6 +175,47 @@ PK `(resource_id, user_id)`: un voto por usuario y recurso. Un trigger
 (`sync_resource_vote_count`) mantiene `resources.vote_count` en INSERT/UPDATE/DELETE.
 RLS activo **sin políticas públicas**: el voto se procesa con el service role tras
 verificar la sesión en `/api/resources/[id]/vote`.
+
+### Tabla `resource_favorites` — lista de guardados del usuario
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `resource_id` | uuid (FK → `resources`, ON DELETE CASCADE) | |
+| `user_id` | uuid (FK → `auth.users`, ON DELETE CASCADE) | |
+| `created_at` | timestamptz | Cuándo lo guardó (ordena `/guardados`) |
+
+PK `(resource_id, user_id)`: guardar dos veces no duplica (upsert). Índice
+`(user_id, created_at desc)` para listar la página de guardados. RLS activo **sin
+políticas públicas**, igual que `resource_votes`: todo pasa por el service role tras
+verificar la sesión en `/api/resources/[id]/favorite`. Es una lista **privada**: nadie
+ve lo que guardaron los demás y no afecta al puntaje del catálogo.
+
+### Tabla `site_feedback` — opiniones sobre la plataforma
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | uuid (PK) | Autogenerado |
+| `user_id` | uuid (FK → `profiles`, ON DELETE SET NULL) | Autor (`null` = anónimo) |
+| `session_id` | text | Misma sesión anónima de la analítica (antiflood sin cuenta) |
+| `sentiment` | text | `me_encanta` \| `puede_mejorar` \| `no_me_convence` (CHECK en DB) |
+| `message` | text | Texto de la opinión (CHECK: 1–1000 caracteres) |
+| `hidden_at` | timestamptz | Si tiene valor, el staff ya la archivó (leída) |
+| `created_at` | timestamptz | |
+
+Es el buzón de `/opiniones` (ver [03-interfaz.md](03-interfaz.md)): **nada de esto se
+publica**. Se escribe desde la página y solo se lee en `/admin` → Opiniones. Es distinta
+de `feedback_votes`: aquella es una **pregunta cerrada** de una sola respuesta por
+sesión; esta es texto libre, firmado con el `display_name` de quien lo escribe o como
+"Anónimo".
+
+`user_id` apunta a `profiles` (no a `auth.users`) para que PostgREST pueda embeber el
+nombre del autor en una sola consulta; como `profiles.id` ya cae en cascada con la
+cuenta, borrar un usuario deja sus opiniones como anónimas en vez de borrarlas.
+
+RLS activo **sin políticas públicas**: se escribe en `/api/opinions` (máx. 3 opiniones
+por hora y por usuario o sesión) y solo se lee con el service role en
+`/api/admin/opinions`, que exige rol de staff. Desde `/admin` → pestaña **Opiniones** se
+archiva lo ya leído o se borra.
 
 ## Vista `watch_stats`
 
@@ -173,6 +232,8 @@ Agregados por video: `plays`, `autoplays`, `youtube_opens`, `unique_sessions`,
 | `categories`, `resources`, `playlist_items`, `resource_categories` | RLS activo; `SELECT` público (contenido curado sin PII); el catálogo público solo ve `resources.status = 'published'`; escrituras solo vía service role |
 | `profiles` | RLS activo; `SELECT` público; el usuario puede actualizar su fila (no la columna `role`, revocada); solo el service role cambia roles |
 | `resource_votes` | RLS activo **sin políticas públicas**: el voto se procesa con el service role tras verificar la sesión |
+| `resource_favorites` | RLS activo **sin políticas públicas**: lista privada, se lee/escribe con el service role acotada por `user_id` |
+| `site_feedback` | RLS activo **sin políticas públicas**: se escribe desde `/api/opinions` y solo lo lee el staff vía `/api/admin/opinions` (buzón privado) |
 
 Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_ROLE_KEY`
 (nunca expuesta al navegador). Las rutas `/api/admin/*` autorizan por **rol de sesión**
@@ -209,3 +270,14 @@ Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_RO
 9. **`0002_roles`** (`supabase/migrations/`): columna `role` en `profiles`
    (`owner`/`admin`/`user`, default `user`), se revoca el `UPDATE` de `role` a los
    clientes (anti auto-escalada) y se asigna `owner` a la cuenta inicial.
+10. **`0003_favoritos_y_opiniones`** (`supabase/migrations/`): tabla
+   `resource_favorites` (lista privada de guardados, PK `(resource_id, user_id)`) y
+   tabla `site_feedback` (opiniones publicables con moderación por `hidden_at`).
+   Ambas con RLS sin políticas públicas. Todo `CREATE TABLE IF NOT EXISTS`, sin
+   ningún `DROP`/`DELETE`.
+11. **`0004_aportes_pendientes`** (`supabase/migrations/`): el CHECK de
+   `resources.status` acepta además `pending` (solo se amplía) y se agrega la
+   columna `submitted_session` para el antiflood de los aportes sin cuenta.
+12. **`0005_perfil`** (`supabase/migrations/`): columnas `bio`, `location`, `links`
+   (jsonb, default `[]`) y `updated_at` en `profiles`, con CHECKs de tamaño para
+   que los límites se cumplan aunque se edite la fila desde el navegador.

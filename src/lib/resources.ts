@@ -4,9 +4,10 @@ import { fetchOEmbed } from "@/lib/oembed";
 import { fetchVideoDetails, fetchPlaylistVideos } from "@/lib/invidious";
 
 // Alta de un recurso (video suelto o playlist) a partir de una URL de YouTube.
-// Compartido por el alta del admin y por los envíos de la comunidad. La única
-// diferencia es `submittedBy`: null para lo curado por el admin, el id del
-// usuario para lo que aporta la comunidad. El status arranca en 'published'.
+// Compartido por el alta del admin y por los envíos de la comunidad. Cambian
+// `submittedBy` (null para lo curado por el admin, el id del usuario para lo que
+// aporta la comunidad) y `status`: 'published' por defecto, o 'pending' cuando
+// el aporte llega sin cuenta y necesita aprobación del staff.
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -39,6 +40,8 @@ export type CreateResourceResult =
     }
   | { ok: false; status: number; error: string; needsTitle?: boolean };
 
+export type ResourceStatus = "published" | "pending";
+
 export async function createResourceFromUrl(
   admin: SupabaseClient,
   opts: {
@@ -46,6 +49,8 @@ export async function createResourceFromUrl(
     categoryIds: string[];
     manualTitle?: string | null;
     submittedBy?: string | null;
+    submittedSession?: string | null;
+    status?: ResourceStatus;
   }
 ): Promise<CreateResourceResult> {
   const target = parseYouTubeUrl(opts.url);
@@ -61,6 +66,8 @@ export async function createResourceFromUrl(
     categoryIds: opts.categoryIds,
     manualTitle: opts.manualTitle ?? null,
     submittedBy: opts.submittedBy ?? null,
+    submittedSession: opts.submittedSession ?? null,
+    status: opts.status ?? "published",
   };
 
   return target.kind === "video"
@@ -72,12 +79,14 @@ interface AddOpts {
   categoryIds: string[];
   manualTitle: string | null;
   submittedBy: string | null;
+  submittedSession: string | null;
+  status: ResourceStatus;
 }
 
 async function addVideo(
   admin: SupabaseClient,
   videoId: string,
-  { categoryIds, manualTitle, submittedBy }: AddOpts
+  { categoryIds, manualTitle, submittedBy, submittedSession, status }: AddOpts
 ): Promise<CreateResourceResult> {
   const oembed = await fetchOEmbed(videoId);
   let publishedAt: string | null = null;
@@ -102,6 +111,8 @@ async function addVideo(
       published_at: publishedAt,
       source: "manual",
       submitted_by: submittedBy,
+      submitted_session: submittedSession,
+      status,
       synced_at: new Date().toISOString(),
     })
     .select("id")
@@ -115,7 +126,7 @@ async function addVideo(
 async function addPlaylist(
   admin: SupabaseClient,
   playlistId: string,
-  { categoryIds, manualTitle, submittedBy }: AddOpts
+  { categoryIds, manualTitle, submittedBy, submittedSession, status }: AddOpts
 ): Promise<CreateResourceResult> {
   let imported;
   try {
@@ -150,6 +161,8 @@ async function addPlaylist(
       video_count: items.length,
       source: imported ? "playlist_import" : "manual",
       submitted_by: submittedBy,
+      submitted_session: submittedSession,
+      status,
       synced_at: imported ? new Date().toISOString() : null,
     })
     .select("id")

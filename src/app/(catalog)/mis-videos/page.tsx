@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getUserVotes } from "@/lib/votes";
+import { getUserFavorites } from "@/lib/favorites";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { getCategoriesForResources } from "@/lib/catalog";
 import type { ResourceRow } from "@/lib/types";
@@ -27,9 +28,10 @@ export default async function MisVideosPage() {
   const published = all.filter((r) => r.status !== "hidden");
   const hidden = all.filter((r) => r.status === "hidden");
   const publishedIds = published.map((r) => r.id);
-  const [userVotes, categoriesByResource] = await Promise.all([
+  const [userVotes, categoriesByResource, favorites] = await Promise.all([
     getUserVotes(user.id, publishedIds),
     getCategoriesForResources(publishedIds),
+    getUserFavorites(user.id, publishedIds),
   ]);
 
   return (
@@ -77,6 +79,7 @@ export default async function MisVideosPage() {
           from="mis-videos"
           userVotes={userVotes}
           categoriesByResource={categoriesByResource}
+          favorites={favorites}
           canVote
           empty="Todos tus videos están ocultos por ahora."
         />

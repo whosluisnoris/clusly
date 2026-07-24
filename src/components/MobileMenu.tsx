@@ -7,11 +7,12 @@ import { SITE_NAME } from "@/lib/constants";
 
 // Menú lateral (drawer) para móvil: mueve los enlaces de navegación fuera de la
 // barra superior, que en pantallas chicas solo conserva el CTA y el tema. En
-// escritorio no se muestra (los enlaces viven en la barra). `showAdmin` añade el
-// enlace al panel solo para staff.
+// escritorio no se muestra (los enlaces viven en la barra). `loggedIn` añade
+// "Guardados" (lista personal) y `showAdmin` el enlace al panel, solo staff.
 const LINKS = [
   { href: "/todo", label: "Explorar" },
   { href: "/platzi-lives", label: "Platzi Lives" },
+  { href: "/enviar", label: "Aportar video" },
 ];
 
 export function MobileMenu({
@@ -22,7 +23,17 @@ export function MobileMenu({
   loggedIn?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const links = showAdmin ? [...LINKS, { href: "/admin", label: "Admin" }] : LINKS;
+  const links = [
+    ...LINKS,
+    ...(loggedIn
+      ? [
+          { href: "/guardados", label: "Guardados" },
+          { href: "/perfil", label: "Mi perfil" },
+        ]
+      : []),
+    { href: "/opiniones", label: "Opiniones" },
+    ...(showAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
 
   return (
     <div className="sm:hidden">

@@ -22,6 +22,13 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
   if (!user) {
     return (
       <div className="flex shrink-0 items-center gap-1.5">
+        {/* Aportar está abierto sin cuenta: la sesión se pide al confirmar */}
+        <Link
+          href="/enviar"
+          className="hidden rounded-full bg-fill px-3.5 py-2 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong sm:inline-block"
+        >
+          + Aportar video
+        </Link>
         <Link
           href="/entrar"
           className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:text-foreground sm:inline-block"
@@ -75,6 +82,12 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
               className="glass absolute right-0 z-50 mt-2 w-52 rounded-xl p-1.5 shadow-xl backdrop-blur-md"
             >
               <div className="truncate px-3 py-2 text-xs text-faint">{user.email}</div>
+              <MenuLink href="/perfil" onClick={() => setOpen(false)}>
+                Mi perfil
+              </MenuLink>
+              <MenuLink href="/guardados" onClick={() => setOpen(false)}>
+                Guardados
+              </MenuLink>
               <MenuLink href="/mis-videos" onClick={() => setOpen(false)}>
                 Mis videos
               </MenuLink>

@@ -24,6 +24,8 @@ videos dispersos.
   cuenta). Lo que se escribe **no se publica**: se lee solo desde el panel.
 - **Perfil (`/perfil`)**: los datos de la cuenta, biografía, ubicación y enlaces
   editables, más el resumen de actividad del usuario.
+- **Blog (`/blog`)**: artículos en Markdown. Solo los escribe y publica el staff
+  (`owner`/`admin`) desde la pestaña Blog del panel; el resto solo lee.
 - **Roles** (`owner` / `admin` / `user`): el panel `/admin` se abre por el rol de la
   sesión (no por contraseña); ahí se gestionan categorías, recursos y lives, más
   estadísticas.
@@ -53,6 +55,7 @@ Navegador (Next.js)
   │  POST /api/resources/[id]/favorite► guardar/quitar (sesión requerida)
   │  POST /api/opinions ──────────► opinión al buzón privado (con o sin cuenta)
   │  PATCH /api/profile ──────────► perfil: nombre, bio, ubicación y enlaces
+  │  /api/admin/blog (rol owner/admin)► escribir y publicar artículos del blog
   │  GET /api/live  ──────────────► scraping del canal de YouTube (¿hay lives?)
   │                                 + histórico en Supabase + enriquecimiento
   │  POST /api/events ────────────► inserta evento anónimo en Supabase
@@ -65,6 +68,7 @@ Supabase (Postgres + Auth)
   ├── resource_votes ← un voto por usuario/recurso (mantiene resources.vote_count)
   ├── resource_favorites ← lista privada de guardados por usuario
   ├── site_feedback  ← buzón privado de opiniones (solo lo lee el staff)
+  ├── blog_posts     ← artículos del blog (público solo lo publicado)
   ├── streams        ← histórico de lives (con fechas y estado en vivo)
   ├── watch_events   ← eventos de analítica
   └── watch_stats    ← vista con los agregados

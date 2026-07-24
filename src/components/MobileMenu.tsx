@@ -12,6 +12,7 @@ import { SITE_NAME } from "@/lib/constants";
 const LINKS = [
   { href: "/todo", label: "Explorar" },
   { href: "/platzi-lives", label: "Platzi Lives" },
+  { href: "/blog", label: "Blog" },
   { href: "/enviar", label: "Aportar video" },
 ];
 

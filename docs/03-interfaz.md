@@ -92,6 +92,22 @@ ubicación y hasta 6 enlaces con etiqueta. Guarda con `PATCH /api/profile` y ref
 página para que la barra y las opiniones firmadas vean el nombre nuevo. Los enlaces se
 abren con `rel="noopener noreferrer nofollow"` y solo si son `http`/`https`.
 
+## Blog
+
+**`/blog`** lista los artículos publicados (título, resumen, firma, fecha y minutos de
+lectura) y **`/blog/[slug]`** muestra uno, con `generateMetadata` propio para que al
+compartirlo salgan su título y su resumen en vez de los genéricos del sitio.
+
+**Escribirlo es exclusivo del staff**: la pestaña **Blog** de `/admin`
+([`BlogManager`](../src/components/admin/BlogManager.tsx)) es el único punto de entrada
+y todas sus llamadas van a `/api/admin/blog`, que vuelve a exigir rol `owner`/`admin`.
+Un artículo **nace como borrador** y no lo ve nadie hasta pulsar "Publicar"; se puede
+despublicar, editar y borrar desde la misma lista.
+
+El cuerpo se escribe en Markdown básico — encabezados, listas, citas, separadores,
+bloques de código, **negrita**, *cursiva*, `código` y enlaces — y lo pinta
+[`Markdown`](../src/lib/markdown.tsx), que genera nodos de React en vez de HTML crudo.
+
 ## Aportar sin cuenta
 
 `/enviar` ya no exige sesión para entrar. Se llena la URL y las categorías, y al

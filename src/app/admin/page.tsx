@@ -16,7 +16,7 @@ export default async function AdminPage() {
   if (!isStaff(user.role)) redirect("/");
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-10">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">

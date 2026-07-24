@@ -37,13 +37,22 @@ video); el reproductor añade además la fecha absoluta.
 
 ## Catálogo, navegación y responsive
 
-- **`SiteHeader`** ([componente](../src/components/SiteHeader.tsx)): barra del catálogo
-  con marca + enlaces (Explorar, Platzi Lives, y **Admin** solo para staff) + tema +
-  sesión (`AuthNav`). En **móvil** los enlaces se mueven a un **menú lateral (drawer)**
+- **`SiteShell`** ([componente](../src/components/SiteShell.tsx)): el marco de **toda**
+  la plataforma — `SiteHeader` + contenido + `SiteFooter`, con la sesión resuelta en el
+  servidor. Lo usan los layouts del catálogo, del panel `/admin` y de las páginas de
+  acceso; la landing no lo usa (tiene su propio envoltorio con el resplandor de fondo)
+  pero monta el mismo `SiteHeader`. Así la navegación no cambia al pasar de una sección
+  a otra.
+- **`SiteHeader`** ([componente](../src/components/SiteHeader.tsx)): barra con marca +
+  enlaces (Explorar, Platzi Lives, Blog, Opiniones, **Guardados** con sesión y **Admin**
+  solo para staff) + tema + sesión (`AuthNav`). En **móvil** los enlaces se mueven a un **menú lateral (drawer)**
   con hamburguesa ([`MobileMenu`](../src/components/MobileMenu.tsx)); la barra deja solo
   el CTA de sesión y el toggle de tema. El drawer se renderiza con un **portal** a
   `document.body` para escapar del `backdrop-filter` del header (que, si no, atraparía a
   los elementos `fixed`). `body` usa `overflow-x-clip` como red de seguridad.
+  > En la landing, el recorte del resplandor de fondo va en su propio contenedor y no
+  > en el envoltorio de la página: un `overflow-hidden` en un ancestro rompería el
+  > `position: sticky` de la barra.
 - **`ResourceCard`** ([componente](../src/components/ResourceCard.tsx)): tarjeta del
   catálogo (miniatura + título + canal). Al pie muestra **las categorías** del recurso
   (hasta 2, con "+N" si hay más); los datos los inyecta cada página vía

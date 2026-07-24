@@ -1,23 +1,14 @@
-import { getCurrentUser } from "@/lib/auth";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
+import { SiteShell } from "@/components/SiteShell";
 
 export const dynamic = "force-dynamic";
 
-// Layout compartido del catálogo: barra de navegación con sesión + pie de página.
+// Layout del catálogo: el marco compartido de la plataforma (barra + pie).
 // La encuesta flotante NO vive aquí: su pregunta es sobre Platzi Lives, así que
 // solo se monta en esa página.
-export default async function CatalogLayout({
+export default function CatalogLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
-  return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader user={user} />
-      {children}
-      <SiteFooter />
-    </div>
-  );
+  return <SiteShell>{children}</SiteShell>;
 }

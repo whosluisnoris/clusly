@@ -2,12 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { authorizeAdmin } from "@/lib/admin-auth";
 import { getCurrentUser, isStaff } from "@/lib/auth";
-import { getAllPosts, slugify, uniqueSlug } from "@/lib/blog";
+import { getAllPosts, slugify, uniqueSlug, isBlogImageUrl } from "@/lib/blog";
 
 export const dynamic = "force-dynamic";
 
 const MAX_TITLE = 160;
 const MAX_EXCERPT = 300;
+
+// La portada solo puede apuntar al bucket `blog` de este proyecto: es lo que
+// sube /api/admin/blog/upload y lo único que `next/image` sabe servir.
+//   · campo ausente  → no se toca
+//   · cadena vacía   → se quita la portada
+//   · URL de fuera   → error (nunca se guarda en silencio)
+type CoverResult =
+  | { ok: true; skip: true }
+  | { ok: true; skip: false; value: string | null }
+  | { ok: false };
+
+function parseCover(value: unknown): CoverResult {
+  if (typeof value !== "string") return { ok: true, skip: true };
+  const url = value.trim();
+  if (!url) return { ok: true, skip: false, value: null };
+  if (!isBlogImageUrl(url)) return { ok: false };
+  return { ok: true, skip: false, value: url };
+}
+
+const COVER_ERROR =
+  "La portada debe ser una imagen subida desde aquí (bucket del blog).";
 
 // El blog lo escribe únicamente el staff: todas las rutas de aquí pasan por
 // `authorizeAdmin` (rol owner/admin en la sesión, o el ADMIN_SECRET como
@@ -38,6 +59,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const cover = parseCover(body.coverUrl);
+  if (!cover.ok) {
+    return NextResponse.json({ error: COVER_ERROR }, { status: 400 });
+  }
+
   const status = body.status === "published" ? "published" : "draft";
   const slug = await uniqueSlug(slugify(title));
 
@@ -55,6 +81,7 @@ export async function POST(request: NextRequest) {
           ? body.excerpt.trim().slice(0, MAX_EXCERPT)
           : null,
       content: typeof body.content === "string" ? body.content : "",
+      cover_url: cover.skip ? null : cover.value,
       author_id: authorId,
       status,
       published_at: status === "published" ? new Date().toISOString() : null,
@@ -115,6 +142,14 @@ export async function PATCH(request: NextRequest) {
   }
   if (typeof body.content === "string") {
     updates.content = body.content;
+  }
+
+  const cover = parseCover(body.coverUrl);
+  if (!cover.ok) {
+    return NextResponse.json({ error: COVER_ERROR }, { status: 400 });
+  }
+  if (!cover.skip) {
+    updates.cover_url = cover.value;
   }
 
   if (body.status === "published" || body.status === "draft") {

@@ -7,11 +7,15 @@ import type { ReactNode } from "react";
 // por más que lo intente. Los enlaces además solo se pintan si son http/https.
 //
 // Soporta: encabezados (#, ##, ###), listas (- / 1.), citas (>), separadores
-// (---), bloques de código (```) y párrafos; en línea: **negrita**, *cursiva*,
-// `código` y [enlaces](https://…).
+// (---), bloques de código (```), imágenes (![alt](url)) y párrafos; en línea:
+// **negrita**, *cursiva*, `código` y [enlaces](https://…).
 
-const INLINE_RE = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\))/g;
+// La imagen va primero: si no, `![alt](url)` casaría con el patrón de enlace y
+// dejaría un "!" suelto.
+const INLINE_RE =
+  /(!\[[^\]]*\]\([^)\s]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\))/g;
 const LINK_RE = /^\[([^\]]+)\]\(([^)\s]+)\)$/;
+const IMAGE_RE = /^!\[([^\]]*)\]\(([^)\s]+)\)$/;
 
 function isSafeHref(url: string): boolean {
   try {
@@ -28,6 +32,26 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
 
   return parts.map((part, i) => {
     const key = `${keyPrefix}-${i}`;
+
+    const image = part.match(IMAGE_RE);
+    if (image) {
+      const [, alt, src] = image;
+      if (!isSafeHref(src)) return <span key={key}>{alt}</span>;
+      // Se usa <img> y no next/image a propósito: las imágenes de un artículo
+      // pueden venir de cualquier host https (no solo del bucket del blog), y
+      // next/image solo sirve los declarados en next.config.ts.
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={key}
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          className="mx-auto my-6 h-auto max-w-full rounded-xl ring-1 ring-border"
+        />
+      );
+    }
 
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
@@ -194,6 +218,32 @@ export function Markdown({ children }: { children: string }) {
             <li key={n}>{renderInline(item, `ol${key}-${n}`)}</li>
           ))}
         </ol>
+      );
+      continue;
+    }
+
+    // Imagen sola en su línea: se pinta como figura y el alt hace de pie.
+    const lone = trimmed.match(IMAGE_RE);
+    if (lone) {
+      const [, alt, src] = lone;
+      i += 1;
+      if (!isSafeHref(src)) continue;
+      blocks.push(
+        <figure key={key++} className="my-7">
+          {/* eslint-disable-next-line @next/next/no-img-element -- ver renderInline */}
+          <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            className="mx-auto h-auto max-w-full rounded-xl ring-1 ring-border"
+          />
+          {alt && (
+            <figcaption className="mt-2.5 text-center text-xs text-faint">
+              {alt}
+            </figcaption>
+          )}
+        </figure>
       );
       continue;
     }

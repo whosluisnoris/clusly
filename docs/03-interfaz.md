@@ -105,8 +105,18 @@ Un artículo **nace como borrador** y no lo ve nadie hasta pulsar "Publicar"; se
 despublicar, editar y borrar desde la misma lista.
 
 El cuerpo se escribe en Markdown básico — encabezados, listas, citas, separadores,
-bloques de código, **negrita**, *cursiva*, `código` y enlaces — y lo pinta
+bloques de código, imágenes, **negrita**, *cursiva*, `código` y enlaces — y lo pinta
 [`Markdown`](../src/lib/markdown.tsx), que genera nodos de React en vez de HTML crudo.
+
+**Imágenes.** El editor tiene dos subidores, ambos contra el bucket `blog` de Supabase
+Storage (ver [01-base-de-datos.md](01-base-de-datos.md)):
+
+- **Portada**: se sube, se previsualiza y se puede cambiar o quitar. Sale en la lista
+  del blog (recorte 21:9), arriba del artículo (16:9) y como imagen de Open Graph al
+  compartirlo.
+- **Insertar imagen**: sube el archivo y pega `![](url)` justo donde está el cursor del
+  editor. Una imagen sola en su línea se pinta como figura y el texto alternativo hace
+  de pie de foto.
 
 ## Aportar sin cuenta
 

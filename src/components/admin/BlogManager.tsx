@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { timeAgo, formatDate } from "@/lib/dates";
 import type { BlogPost } from "@/lib/blog";
 
@@ -15,10 +16,68 @@ export function BlogManager() {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
 
+  // Un input de archivo por destino: portada e imagen dentro del texto.
+  const coverInput = useRef<HTMLInputElement>(null);
+  const inlineInput = useRef<HTMLInputElement>(null);
+  const contentArea = useRef<HTMLTextAreaElement>(null);
+
   const headers = { "Content-Type": "application/json" };
+
+  // Sube al bucket `blog` y devuelve la URL pública (o null si algo falló).
+  async function upload(file: File): Promise<string | null> {
+    setUploading(true);
+    setStatus(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/admin/blog/upload", { method: "POST", body });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStatus({ text: data.error ?? "No se pudo subir la imagen.", ok: false });
+        return null;
+      }
+      return data.url as string;
+    } catch {
+      setStatus({ text: "No se pudo subir la imagen, revisa tu conexión.", ok: false });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function pickCover(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite volver a elegir el mismo archivo
+    if (!file) return;
+    const url = await upload(file);
+    if (url) {
+      setCoverUrl(url);
+      setStatus({ text: "Portada subida ✓", ok: true });
+    }
+  }
+
+  // Inserta la imagen como Markdown donde esté el cursor del editor.
+  async function pickInline(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const url = await upload(file);
+    if (!url) return;
+
+    const markdown = `\n\n![](${url})\n\n`;
+    const area = contentArea.current;
+    const at = area?.selectionStart ?? content.length;
+    setContent((prev) => prev.slice(0, at) + markdown + prev.slice(at));
+    setStatus({
+      text: "Imagen insertada ✓ — escribe el texto alternativo entre los corchetes.",
+      ok: true,
+    });
+  }
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/blog", { headers });
@@ -36,6 +95,7 @@ export function BlogManager() {
     setTitle("");
     setExcerpt("");
     setContent("");
+    setCoverUrl("");
   }
 
   function startEdit(post: BlogPost) {
@@ -43,6 +103,7 @@ export function BlogManager() {
     setTitle(post.title);
     setExcerpt(post.excerpt ?? "");
     setContent(post.content);
+    setCoverUrl(post.coverUrl ?? "");
     setStatus(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -64,6 +125,7 @@ export function BlogManager() {
         title,
         excerpt,
         content,
+        coverUrl,
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -160,12 +222,89 @@ export function BlogManager() {
           className="resize-y rounded-lg bg-background px-4 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
 
+        {/* Portada */}
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Portada
+          </p>
+          {coverUrl ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative h-24 w-40 shrink-0 overflow-hidden rounded-lg bg-elevated ring-1 ring-border">
+                <Image
+                  src={coverUrl}
+                  alt="Portada del artículo"
+                  fill
+                  sizes="160px"
+                  className="object-cover"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => coverInput.current?.click()}
+                disabled={uploading}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill hover:text-foreground disabled:opacity-50"
+              >
+                Cambiar
+              </button>
+              <button
+                type="button"
+                onClick={() => setCoverUrl("")}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill hover:text-foreground"
+              >
+                Quitar
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => coverInput.current?.click()}
+              disabled={uploading}
+              className="self-start rounded-lg border border-dashed border-border-strong px-4 py-2.5 text-xs text-muted transition hover:bg-fill hover:text-foreground disabled:opacity-50"
+            >
+              {uploading ? "Subiendo…" : "⬆ Subir portada"}
+            </button>
+          )}
+          <input
+            ref={coverInput}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+            onChange={pickCover}
+            className="hidden"
+          />
+          <span className="text-xs text-faint">
+            Se guarda en el bucket <code>blog</code> de Supabase. Máx. 5 MB · PNG, JPG,
+            WEBP, GIF o AVIF.
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Contenido
+          </p>
+          <button
+            type="button"
+            onClick={() => inlineInput.current?.click()}
+            disabled={uploading}
+            className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs font-semibold text-accent-ink transition hover:bg-accent/10 disabled:opacity-50"
+          >
+            {uploading ? "Subiendo…" : "🖼 Insertar imagen"}
+          </button>
+          <input
+            ref={inlineInput}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+            onChange={pickInline}
+            className="hidden"
+          />
+        </div>
+
         <textarea
+          ref={contentArea}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={14}
           placeholder={
-            "Contenido del artículo.\n\nAcepta Markdown básico:\n# Título   ## Subtítulo\n- viñetas   1. numeradas\n> cita\n**negrita**, *cursiva*, `código`, [enlace](https://…)\n```\nbloque de código\n```"
+            "Contenido del artículo.\n\nAcepta Markdown básico:\n# Título   ## Subtítulo\n- viñetas   1. numeradas\n> cita\n**negrita**, *cursiva*, `código`, [enlace](https://…)\n![texto alternativo](url de la imagen)\n```\nbloque de código\n```"
           }
           className="resize-y rounded-lg bg-background px-4 py-2.5 font-mono text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
         />

@@ -226,6 +226,7 @@ archiva lo ya leído o se borra.
 | `title` | text | Título (CHECK: 3–160) |
 | `excerpt` | text | Resumen para la lista y al compartir (máx. 300) |
 | `content` | text | Cuerpo en Markdown básico |
+| `cover_url` | text | Portada, siempre del bucket `blog` (ver más abajo) |
 | `author_id` | uuid (FK → `profiles`, ON DELETE SET NULL) | Quién lo escribió |
 | `status` | text | `draft` \| `published` (CHECK en DB, default `draft`) |
 | `published_at` | timestamptz | Se fija la primera vez que se publica y ya no se mueve |
@@ -243,7 +244,31 @@ coinciden, se desempata con `-2`, `-3`…
 
 El contenido se pinta con [`Markdown`](../src/lib/markdown.tsx), un renderizador propio
 que devuelve **nodos de React** (nunca `dangerouslySetInnerHTML`), así que un artículo
-no puede inyectar HTML ni scripts; los enlaces solo se pintan si son `http`/`https`.
+no puede inyectar HTML ni scripts; los enlaces e imágenes solo se pintan si son
+`http`/`https`.
+
+### Bucket `blog` — imágenes de los artículos
+
+Las imágenes viven en un bucket de **Supabase Storage** llamado `blog`:
+
+| Ajuste | Valor |
+|---|---|
+| Público | Sí — las imágenes se sirven por URL sin firmar (es lo que se pega en el artículo) |
+| Tamaño máximo | 5 MB por archivo |
+| Tipos | `image/png`, `jpeg`, `webp`, `gif`, `avif` |
+| Políticas de escritura | **Ninguna** |
+
+Que sea público es solo para **leer**. Como `storage.objects` no tiene ninguna política
+de escritura, la única forma de subir algo es el service role — y solo lo usa
+`/api/admin/blog/upload`, que exige rol owner/admin. Esa ruta repite los límites de
+tamaño y tipo, y **renombra el archivo** (`posts/<timestamp>-<aleatorio>.<ext>`) para
+que nunca se use el nombre original ni se pise una imagen existente.
+
+`cover_url` se valida al guardar **y al leer**: tiene que apuntar al bucket de este
+mismo proyecto, porque la portada se pinta con `next/image`, que solo sirve los hosts
+declarados en `next.config.ts` (el host de Supabase se deriva de
+`NEXT_PUBLIC_SUPABASE_URL`). Las imágenes dentro del texto, en cambio, se pintan con un
+`<img>` normal para que también funcione pegar una URL externa.
 
 ## Vista `watch_stats`
 
@@ -313,3 +338,6 @@ Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_RO
 13. **`0006_blog`** (`supabase/migrations/`): tabla `blog_posts` con RLS y una sola
    política (lectura pública de lo publicado). Sin políticas de escritura: el blog
    solo se edita desde el panel con rol owner/admin.
+14. **`0007_blog_imagenes`** (`supabase/migrations/`): bucket de Storage `blog`
+   (público para leer, 5 MB, solo imágenes, sin políticas de escritura) y columna
+   `cover_url` en `blog_posts`.

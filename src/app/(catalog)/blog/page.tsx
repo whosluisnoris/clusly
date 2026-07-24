@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getPublishedPosts, readingMinutes } from "@/lib/blog";
 import { formatDate, timeAgo } from "@/lib/dates";
 
@@ -43,8 +44,20 @@ export default async function BlogPage() {
             <li key={post.id}>
               <Link
                 href={`/blog/${post.slug}`}
-                className="block rounded-2xl bg-surface p-6 ring-1 ring-border transition hover:ring-2 hover:ring-accent/40"
+                className="block overflow-hidden rounded-2xl bg-surface ring-1 ring-border transition hover:ring-2 hover:ring-accent/40"
               >
+                {post.coverUrl && (
+                  <div className="relative aspect-[21/9] w-full bg-elevated">
+                    <Image
+                      src={post.coverUrl}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 100vw, 768px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
                 <h2 className="text-xl font-black leading-snug text-foreground">
                   {post.title}
                 </h2>
@@ -68,6 +81,7 @@ export default async function BlogPage() {
                   )}
                   <span>{readingMinutes(post.content)} min de lectura</span>
                 </p>
+                </div>
               </Link>
             </li>
           ))}

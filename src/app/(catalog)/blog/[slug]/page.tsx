@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPublishedPost, readingMinutes } from "@/lib/blog";
@@ -19,6 +20,10 @@ export async function generateMetadata({
   if (!post) return { title: "Artículo no encontrado" };
 
   const description = post.excerpt ?? undefined;
+  // Si el artículo tiene portada, es la imagen que sale al compartirlo; si no,
+  // se hereda la del sitio (/og.png) del layout raíz.
+  const images = post.coverUrl ? [post.coverUrl] : undefined;
+
   return {
     title: post.title,
     description,
@@ -30,8 +35,14 @@ export async function generateMetadata({
       url: `/blog/${post.slug}`,
       publishedTime: post.publishedAt ?? undefined,
       authors: post.authorName ? [post.authorName] : undefined,
+      ...(images && { images }),
     },
-    twitter: { card: "summary_large_image", title: post.title, description },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      ...(images && { images }),
+    },
   };
 }
 
@@ -77,6 +88,18 @@ export default async function BlogPostPage({
           </p>
           {post.excerpt && (
             <p className="mt-4 text-base leading-relaxed text-muted">{post.excerpt}</p>
+          )}
+          {post.coverUrl && (
+            <div className="relative mt-6 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-elevated ring-1 ring-border">
+              <Image
+                src={post.coverUrl}
+                alt=""
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 672px"
+                className="object-cover"
+              />
+            </div>
           )}
         </header>
 

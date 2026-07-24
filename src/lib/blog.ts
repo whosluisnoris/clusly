@@ -7,12 +7,17 @@ import { getSupabase, getSupabaseAdmin } from "@/lib/supabase";
 
 export type PostStatus = "draft" | "published";
 
+// Bucket de Supabase Storage con las imágenes del blog (público para leer, sin
+// políticas de escritura: solo sube /api/admin/blog/upload con el service role).
+export const BLOG_BUCKET = "blog";
+
 export interface BlogPost {
   id: string;
   slug: string;
   title: string;
   excerpt: string | null;
   content: string;
+  coverUrl: string | null;
   authorName: string | null;
   status: PostStatus;
   publishedAt: string | null;
@@ -26,6 +31,7 @@ interface PostRow {
   title: string;
   excerpt: string | null;
   content: string;
+  cover_url: string | null;
   status: PostStatus;
   published_at: string | null;
   created_at: string;
@@ -34,7 +40,7 @@ interface PostRow {
 }
 
 const POST_COLS =
-  "id, slug, title, excerpt, content, status, published_at, created_at, updated_at, profiles(display_name)";
+  "id, slug, title, excerpt, content, cover_url, status, published_at, created_at, updated_at, profiles(display_name)";
 
 function toPost(row: PostRow): BlogPost {
   return {
@@ -43,12 +49,34 @@ function toPost(row: PostRow): BlogPost {
     title: row.title,
     excerpt: row.excerpt,
     content: row.content,
+    // Se vuelve a comprobar al leer: si algo dejó una URL ajena en la columna,
+    // no llega a `next/image` (que solo admite hosts declarados en la config).
+    coverUrl: row.cover_url && isBlogImageUrl(row.cover_url) ? row.cover_url : null,
     authorName: row.profiles?.display_name?.trim() || null,
     status: row.status,
     publishedAt: row.published_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+// ¿La URL apunta al bucket público del blog de nuestro propio proyecto? La
+// portada se pinta con `next/image`, que solo acepta los hosts declarados en
+// next.config.ts, así que se valida al guardar y al leer.
+export function isBlogImageUrl(url: string): boolean {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base) return false;
+  try {
+    const target = new URL(url);
+    const project = new URL(base);
+    return (
+      target.protocol === "https:" &&
+      target.hostname === project.hostname &&
+      target.pathname.startsWith(`/storage/v1/object/public/${BLOG_BUCKET}/`)
+    );
+  } catch {
+    return false;
+  }
 }
 
 // Artículos publicados, del más reciente al más antiguo.

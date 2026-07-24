@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { getActiveCategories, getCategoryResourceCounts } from "@/lib/catalog";
 import { getCurrentUser } from "@/lib/auth";
+import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AuthNav } from "@/components/AuthNav";
 import { SITE_NAME } from "@/lib/constants";
 import { CategoryIcon } from "@/components/CategoryIcon";
 
@@ -40,9 +39,12 @@ export default async function LandingPage() {
   const blend = "var(--blend)";
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden">
+    // El recorte del resplandor va en su propio contenedor y no aquí: un
+    // `overflow-hidden` en el envoltorio de la página rompería el `position:
+    // sticky` de la barra de navegación.
+    <div className="relative flex min-h-screen flex-col">
       {/* Resplandor de acento (flame) de fondo, muy sutil */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div
           className="absolute -left-32 -top-40 h-[36rem] w-[36rem] rounded-full opacity-20 blur-[120px]"
           style={{ background: "var(--brand-flame)" }}
@@ -57,28 +59,8 @@ export default async function LandingPage() {
         />
       </div>
 
-      {/* Header */}
-      <header className="mx-auto flex w-full max-w-[1500px] items-center justify-between px-5 py-5 sm:px-8">
-        <span className="font-display text-lg font-black tracking-tight brand-text">
-          {SITE_NAME}
-        </span>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/platzi-lives"
-            className="hidden rounded-full px-3 py-2 text-sm text-muted transition hover:text-foreground sm:inline-block"
-          >
-            Platzi Lives
-          </Link>
-          <Link
-            href="/todo"
-            className="rounded-full px-3 py-2 text-sm font-semibold text-muted transition hover:text-foreground"
-          >
-            Explorar
-          </Link>
-          <ThemeToggle />
-          <AuthNav user={user} />
-        </div>
-      </header>
+      {/* La misma barra que el resto de la plataforma */}
+      <SiteHeader user={user} />
 
       {/* Hero */}
       <section className="mx-auto w-full max-w-[1500px] px-5 pb-14 pt-14 sm:px-8 sm:pt-24">

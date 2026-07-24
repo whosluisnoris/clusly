@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { timeAgo, formatDate } from "@/lib/dates";
 import type { BlogPost } from "@/lib/blog";
+import { BlogMedia } from "@/components/admin/BlogMedia";
 
 // Editor del blog. Solo llega aquí quien tiene rol owner/admin (el panel lo
 // resuelve el Server Component de /admin) y, además, todas las llamadas van a
@@ -20,6 +21,8 @@ export function BlogManager() {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
+  // Cambia con cada subida para que la vista del bucket se recargue sola.
+  const [mediaToken, setMediaToken] = useState(0);
 
   // Un input de archivo por destino: portada e imagen dentro del texto.
   const coverInput = useRef<HTMLInputElement>(null);
@@ -41,6 +44,7 @@ export function BlogManager() {
         setStatus({ text: data.error ?? "No se pudo subir la imagen.", ok: false });
         return null;
       }
+      setMediaToken((n) => n + 1);
       return data.url as string;
     } catch {
       setStatus({ text: "No se pudo subir la imagen, revisa tu conexión.", ok: false });
@@ -61,22 +65,24 @@ export function BlogManager() {
     }
   }
 
-  // Inserta la imagen como Markdown donde esté el cursor del editor.
-  async function pickInline(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    const url = await upload(file);
-    if (!url) return;
-
+  // Pega la imagen como Markdown donde esté el cursor del editor. Lo usan tanto
+  // el botón de subir como la vista del bucket (reutilizar una ya subida).
+  function insertImage(url: string) {
     const markdown = `\n\n![](${url})\n\n`;
-    const area = contentArea.current;
-    const at = area?.selectionStart ?? content.length;
+    const at = contentArea.current?.selectionStart ?? content.length;
     setContent((prev) => prev.slice(0, at) + markdown + prev.slice(at));
     setStatus({
       text: "Imagen insertada ✓ — escribe el texto alternativo entre los corchetes.",
       ok: true,
     });
+  }
+
+  async function pickInline(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const url = await upload(file);
+    if (url) insertImage(url);
   }
 
   const load = useCallback(async () => {
@@ -413,6 +419,15 @@ export function BlogManager() {
           ))}
         </ul>
       )}
+
+      <BlogMedia
+        onUseAsCover={(url) => {
+          setCoverUrl(url);
+          setStatus({ text: "Portada actualizada ✓", ok: true });
+        }}
+        onInsert={insertImage}
+        reloadToken={mediaToken}
+      />
     </section>
   );
 }

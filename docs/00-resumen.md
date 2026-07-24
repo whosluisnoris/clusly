@@ -58,6 +58,7 @@ Navegador (Next.js)
   │  PATCH /api/profile ──────────► perfil: nombre, bio, ubicación y enlaces
   │  /api/admin/blog (rol owner/admin)► escribir y publicar artículos del blog
   │  POST /api/admin/blog/upload ─► sube imágenes al bucket `blog` de Storage
+  │  /api/admin/blog/media ───────► ver el bucket y borrar imágenes a mano
   │  GET /api/live  ──────────────► scraping del canal de YouTube (¿hay lives?)
   │                                 + histórico en Supabase + enriquecimiento
   │  POST /api/events ────────────► inserta evento anónimo en Supabase

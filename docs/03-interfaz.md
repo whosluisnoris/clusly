@@ -118,6 +118,17 @@ Storage (ver [01-base-de-datos.md](01-base-de-datos.md)):
   editor. Una imagen sola en su línea se pinta como figura y el texto alternativo hace
   de pie de foto.
 
+**Vista del bucket.** Al final de la pestaña, "Ver imágenes subidas"
+([`BlogMedia`](../src/components/admin/BlogMedia.tsx)) lista todo lo que hay en el
+bucket con miniatura, peso, fecha y **en qué artículos se usa cada imagen**. De cada
+una se puede: ponerla de portada, insertarla en el texto que se está editando, copiar
+su URL o **borrarla del bucket**.
+
+El borrado es a mano y avisa antes: si la imagen está en uso, el aviso dice en cuántos
+artículos y solo entonces se manda con `force`. Si no parecía estar en uso, la API
+vuelve a comprobarlo del lado del servidor y responde **409** si cambió mientras tanto,
+así que no hay forma de romper un artículo publicado por una lista desactualizada.
+
 ## Aportar sin cuenta
 
 `/enviar` ya no exige sesión para entrar. Se llena la URL y las categorías, y al

@@ -264,6 +264,13 @@ de escritura, la única forma de subir algo es el service role — y solo lo usa
 tamaño y tipo, y **renombra el archivo** (`posts/<timestamp>-<aleatorio>.<ext>`) para
 que nunca se use el nombre original ni se pise una imagen existente.
 
+**Limpieza.** Nada se borra solo: quitar una portada o un artículo deja el archivo en el
+bucket. La pestaña Blog del panel tiene una vista del bucket (`/api/admin/blog/media`)
+que lista lo subido con su tamaño, fecha y los artículos que lo usan, y permite borrar a
+mano. Esa ruta comprueba el uso antes de borrar y devuelve **409** si la imagen sigue
+referenciada, salvo que se insista con `force`. Solo se puede borrar dentro de
+`posts/` — nunca fuera de la carpeta del blog.
+
 `cover_url` se valida al guardar **y al leer**: tiene que apuntar al bucket de este
 mismo proyecto, porque la portada se pinta con `next/image`, que solo sirve los hosts
 declarados en `next.config.ts` (el host de Supabase se deriva de

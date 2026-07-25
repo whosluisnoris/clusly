@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useT, useLocalePath } from "@/components/I18nProvider";
 
 // Control de votación de un recurso. Voto positivo/negativo con toggle y
 // actualización optimista. Sin sesión, el clic lleva a /entrar. Diseñado para
@@ -24,10 +25,12 @@ export function VoteControl({
   const [pending, setPending] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const t = useT();
+  const localePath = useLocalePath();
 
   async function cast(next: 1 | -1) {
     if (!canVote) {
-      router.push(`/entrar?next=${encodeURIComponent(pathname)}`);
+      router.push(`${localePath("/entrar")}?next=${encodeURIComponent(pathname)}`);
       return;
     }
     if (pending) return;
@@ -76,7 +79,7 @@ export function VoteControl({
       <button
         type="button"
         onClick={(e) => handle(e, 1)}
-        aria-label="Votar útil"
+        aria-label={t.card.voteUp}
         aria-pressed={vote === 1}
         className={`flex items-center justify-center rounded-full transition active:scale-90 ${btn} ${
           vote === 1
@@ -96,7 +99,7 @@ export function VoteControl({
       <button
         type="button"
         onClick={(e) => handle(e, -1)}
-        aria-label="Votar poco útil"
+        aria-label={t.card.voteDown}
         aria-pressed={vote === -1}
         className={`flex items-center justify-center rounded-full transition active:scale-90 ${btn} ${
           vote === -1

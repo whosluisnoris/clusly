@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 // Marco compartido por toda la plataforma: la misma barra de navegación (con la
 // sesión resuelta en el servidor) y el mismo pie. Lo usan el catálogo, el panel
@@ -9,14 +10,20 @@ import { SiteFooter } from "@/components/SiteFooter";
 //
 // La landing no lo usa porque tiene su propio envoltorio (el resplandor de
 // fondo), pero monta el mismo `SiteHeader`.
-export async function SiteShell({ children }: { children: React.ReactNode }) {
+export async function SiteShell({
+  lang = DEFAULT_LOCALE,
+  children,
+}: {
+  lang?: Locale;
+  children: React.ReactNode;
+}) {
   const user = await getCurrentUser();
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader user={user} />
+      <SiteHeader user={user} lang={lang} />
       {children}
-      <SiteFooter />
+      <SiteFooter lang={lang} />
     </div>
   );
 }

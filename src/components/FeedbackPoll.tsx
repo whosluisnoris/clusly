@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { getSessionId } from "@/lib/analytics";
+import { useT } from "@/components/I18nProvider";
+import { plural } from "@/lib/i18n";
 
 // Pregunta y texto por defecto (retrocompatibles con los votos ya recogidos).
 // Para una pregunta post-pivot, pasa props distintas y añade el nuevo id a la
 // lista blanca QUESTIONS en src/app/api/feedback/route.ts.
 const DEFAULT_QUESTION_ID = "live_platform_v1";
-const DEFAULT_TITLE = "¿Te gustaría tener una funcionalidad así en Platzi?";
 
 type Answer = "si" | "puede_mejorar" | "no";
 
@@ -15,12 +16,6 @@ interface Results {
   total: number;
   counts: Record<Answer, number>;
 }
-
-const OPTIONS: { value: Answer; emoji: string; label: string }[] = [
-  { value: "si", emoji: "😍", label: "Sí, me encanta" },
-  { value: "puede_mejorar", emoji: "🤔", label: "Puede mejorar" },
-  { value: "no", emoji: "😕", label: "No me convence" },
-];
 
 function readStoredVote(storageKey: string): Answer | null {
   try {
@@ -46,11 +41,18 @@ async function fetchResults(questionId: string): Promise<Results | null> {
 // para poder cambiarla tras el pivot sin tocar la lógica.
 export function FeedbackPoll({
   questionId = DEFAULT_QUESTION_ID,
-  title = DEFAULT_TITLE,
+  title,
 }: {
   questionId?: string;
   title?: string;
 } = {}) {
+  const t = useT();
+  const heading = title ?? t.poll.defaultTitle;
+  const OPTIONS: { value: Answer; emoji: string; label: string }[] = [
+    { value: "si", emoji: "😍", label: t.poll.yes },
+    { value: "puede_mejorar", emoji: "🤔", label: t.poll.maybe },
+    { value: "no", emoji: "😕", label: t.poll.no },
+  ];
   const STORAGE_KEY = `pl_poll_${questionId}`;
   const DISMISS_KEY = `pl_poll_${questionId}_cerrada`;
   const COMMENT_KEY = `pl_poll_${questionId}_comentario`;
@@ -184,17 +186,17 @@ export function FeedbackPoll({
       {/* Pastilla para reabrir cuando está cerrada */}
       <button
         onClick={reopen}
-        aria-label="Abrir encuesta"
+        aria-label={t.poll.openLabel}
         className={`glass backdrop-blur-md fixed bottom-5 right-5 z-50 rounded-full px-4 py-2.5 text-sm font-semibold text-accent-ink shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 ${
           open ? "pointer-events-none translate-y-3 opacity-0" : "opacity-100"
         }`}
       >
-        📊 Encuesta
+        {t.poll.open}
       </button>
 
       {/* Tarjeta flotante */}
       <section
-        aria-label="Encuesta"
+        aria-label={t.poll.ariaLabel}
         aria-hidden={!open}
         className={`glass backdrop-blur-md fixed bottom-5 left-4 right-4 z-50 rounded-2xl p-5 shadow-2xl transition-all duration-300 sm:left-auto sm:right-5 sm:w-[400px] ${
           open
@@ -204,11 +206,11 @@ export function FeedbackPoll({
       >
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-sm font-bold text-foreground">
-            📊 {title}
+            📊 {heading}
           </h2>
           <button
             onClick={close}
-            aria-label="Cerrar encuesta"
+            aria-label={t.poll.closeLabel}
             className="-mr-1 -mt-1 rounded-full p-1.5 text-muted transition hover:bg-fill-strong hover:text-foreground"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -217,7 +219,7 @@ export function FeedbackPoll({
           </button>
         </div>
         <p className="mt-1 text-xs text-muted">
-          Tu opinión es anónima y nos ayuda a proponer esta sección.
+          {t.poll.privacy}
         </p>
 
         {showOptions ? (
@@ -271,7 +273,7 @@ export function FeedbackPoll({
             {/* Comentario opcional */}
             {commentSent ? (
               <p className="mt-1 text-xs text-muted">
-                💬 ¡Gracias por tu comentario!
+                {t.poll.commentThanks}
               </p>
             ) : (
               <form onSubmit={sendComment} className="mt-1 flex flex-col gap-2">
@@ -280,7 +282,7 @@ export function FeedbackPoll({
                   onChange={(e) => setCommentText(e.target.value)}
                   maxLength={500}
                   rows={2}
-                  placeholder="¿Quieres contarnos por qué? (opcional)"
+                  placeholder={t.poll.commentPlaceholder}
                   className="w-full resize-none rounded-lg bg-fill px-3 py-2 text-xs text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-accent/50"
                 />
                 {commentText.trim().length > 0 && (
@@ -289,7 +291,7 @@ export function FeedbackPoll({
                     disabled={sendingComment}
                     className="self-end rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-on-accent transition hover:opacity-90 active:scale-95 disabled:opacity-50"
                   >
-                    {sendingComment ? "Enviando…" : "Enviar comentario"}
+                    {sendingComment ? t.common.sending : t.poll.commentSend}
                   </button>
                 )}
               </form>
@@ -297,16 +299,14 @@ export function FeedbackPoll({
 
             <div className="mt-1.5 flex items-center justify-between text-xs text-muted">
               <span>
-                Gracias por tu opinión 💚
-                {results
-                  ? ` · ${results.total} ${results.total === 1 ? "voto" : "votos"}`
-                  : ""}
+                {t.poll.thanks}
+                {results ? ` · ${plural(t.poll.voteCount, results.total)}` : ""}
               </span>
               <button
                 onClick={() => setChanging(true)}
                 className="text-accent-ink hover:underline"
               >
-                Cambiar respuesta
+                {t.poll.change}
               </button>
             </div>
           </div>
@@ -314,7 +314,7 @@ export function FeedbackPoll({
 
         {error && (
           <p className="mt-2 text-xs text-red-400">
-            No se pudo registrar tu voto, inténtalo de nuevo en un momento.
+            {t.poll.error}
           </p>
         )}
       </section>

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import type { Category } from "@/lib/types";
+import { LocaleLink } from "@/components/LocaleLink";
+import type { Category, ResourceLanguage } from "@/lib/types";
 import { CategoryMultiSelect } from "@/components/CategoryMultiSelect";
 import { getSessionId } from "@/lib/analytics";
+import { useT } from "@/components/I18nProvider";
 
 type Result =
   | { kind: "success"; youtubeId?: string; warning?: string; pending?: boolean }
@@ -18,6 +19,7 @@ const DRAFT_KEY = "clusly_envio_borrador";
 interface Draft {
   url: string;
   categoryIds: string[];
+  language: ResourceLanguage;
 }
 
 function readDraft(): Draft | null {
@@ -31,6 +33,7 @@ function readDraft(): Draft | null {
       categoryIds: Array.isArray(parsed.categoryIds)
         ? parsed.categoryIds.filter((c): c is string => typeof c === "string")
         : [],
+      language: parsed.language === "en" ? "en" : "es",
     };
   } catch {
     return null;
@@ -59,11 +62,14 @@ export function SubmitForm({
 }) {
   const [url, setUrl] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+  // Idioma hablado del video (no el de la interfaz).
+  const [language, setLanguage] = useState<ResourceLanguage>("es");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   // "form" es el formulario; "cuenta" es el paso que pide sesión antes de
   // publicar (solo aparece cuando no hay usuario).
   const [step, setStep] = useState<"form" | "cuenta">("form");
+  const t = useT();
 
   // Recupera el borrador al montar (en efecto, para no divergir del SSR).
   useEffect(() => {
@@ -71,17 +77,23 @@ export function SubmitForm({
     if (draft) {
       setUrl(draft.url);
       setSelected(draft.categoryIds);
+      setLanguage(draft.language);
     }
   }, []);
 
   function updateUrl(value: string) {
     setUrl(value);
-    writeDraft({ url: value, categoryIds: selected });
+    writeDraft({ url: value, categoryIds: selected, language });
   }
 
   function updateCategories(ids: string[]) {
     setSelected(ids);
-    writeDraft({ url, categoryIds: ids });
+    writeDraft({ url, categoryIds: ids, language });
+  }
+
+  function updateLanguage(value: ResourceLanguage) {
+    setLanguage(value);
+    writeDraft({ url, categoryIds: selected, language: value });
   }
 
   async function publish() {
@@ -94,6 +106,7 @@ export function SubmitForm({
         body: JSON.stringify({
           url,
           categoryIds: selected,
+          language,
           sessionId: getSessionId(),
         }),
       });
@@ -109,8 +122,9 @@ export function SubmitForm({
         writeDraft(null);
         setUrl("");
         setSelected([]);
+        setLanguage("es");
       } else if (!res.ok) {
-        setResult({ kind: "error", message: data.error ?? "No se pudo agregar el video." });
+        setResult({ kind: "error", message: data.error ?? t.submit.genericError });
       } else {
         setResult({
           kind: "success",
@@ -121,9 +135,10 @@ export function SubmitForm({
         writeDraft(null);
         setUrl("");
         setSelected([]);
+        setLanguage("es");
       }
     } catch {
-      setResult({ kind: "error", message: "No hay conexión. Intenta de nuevo." });
+      setResult({ kind: "error", message: t.common.noConnection });
     } finally {
       setLoading(false);
       setStep("form");
@@ -134,7 +149,7 @@ export function SubmitForm({
     e.preventDefault();
     // Sin sesión, primero se ofrece entrar; el borrador ya está guardado.
     if (!loggedIn) {
-      writeDraft({ url, categoryIds: selected });
+      writeDraft({ url, categoryIds: selected, language });
       setStep("cuenta");
       return;
     }
@@ -144,28 +159,22 @@ export function SubmitForm({
   if (step === "cuenta") {
     return (
       <div className="glass backdrop-blur-md rounded-2xl p-5 sm:p-6">
-        <h2 className="text-base font-bold text-foreground">
-          Ya casi. ¿Lo publicamos a tu nombre?
-        </h2>
-        <p className="mt-1.5 text-sm text-muted">
-          Con cuenta, tu video <b className="text-foreground">aparece al instante</b> en
-          el catálogo, queda en tus aportes y puedes votar y guardar. Tu borrador está
-          guardado: si entras ahora, al volver lo encuentras tal cual.
-        </p>
+        <h2 className="text-base font-bold text-foreground">{t.submit.accountTitle}</h2>
+        <p className="mt-1.5 text-sm text-muted">{t.submit.accountBody}</p>
 
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <Link
+          <LocaleLink
             href="/registro?next=/enviar"
             className="brand-gradient rounded-full px-5 py-2.5 text-center text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95"
           >
-            Crear cuenta y publicar
-          </Link>
-          <Link
+            {t.submit.accountSignUp}
+          </LocaleLink>
+          <LocaleLink
             href="/entrar?next=/enviar"
             className="rounded-full bg-fill px-5 py-2.5 text-center text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong"
           >
-            Ya tengo cuenta
-          </Link>
+            {t.submit.accountSignIn}
+          </LocaleLink>
         </div>
 
         <div className="mt-5 border-t border-border pt-4">
@@ -175,13 +184,9 @@ export function SubmitForm({
             disabled={loading}
             className="text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4 disabled:opacity-60"
           >
-            {loading ? "Enviando…" : "Enviarlo sin cuenta"}
+            {loading ? t.common.sending : t.submit.accountAnon}
           </button>
-          <p className="mt-1.5 text-xs text-muted">
-            También sirve: guardamos tu aporte y queda{" "}
-            <b className="text-foreground">pendiente de aprobación</b> del equipo antes
-            de salir en el catálogo.
-          </p>
+          <p className="mt-1.5 text-xs text-muted">{t.submit.accountAnonHint}</p>
         </div>
 
         <button
@@ -189,7 +194,7 @@ export function SubmitForm({
           onClick={() => setStep("form")}
           className="mt-4 text-xs text-muted transition hover:text-foreground"
         >
-          ← Seguir editando
+          {t.submit.keepEditing}
         </button>
 
         {result?.kind === "error" && (
@@ -204,7 +209,7 @@ export function SubmitForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <label className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Enlace de YouTube
+            {t.submit.urlLabel}
           </span>
           <input
             type="url"
@@ -214,14 +219,12 @@ export function SubmitForm({
             placeholder="https://youtube.com/watch?v=…"
             className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
-          <span className="text-xs text-faint">
-            Un video suelto, o una playlist con el link /playlist?list=…
-          </span>
+          <span className="text-xs text-faint">{t.submit.urlHint}</span>
         </label>
 
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Categorías
+            {t.submit.categoriesLabel}
           </span>
           <CategoryMultiSelect
             categories={categories}
@@ -230,18 +233,41 @@ export function SubmitForm({
           />
         </div>
 
+        {/* Idioma hablado del video: alimenta el filtro de la exploración */}
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+            {t.language.videoLabel}
+          </span>
+          <div className="flex gap-2">
+            {(["es", "en"] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => updateLanguage(value)}
+                aria-pressed={language === value}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition active:scale-95 ${
+                  language === value
+                    ? "bg-accent text-on-accent"
+                    : "bg-fill text-muted ring-1 ring-border hover:bg-fill-strong hover:text-foreground"
+                }`}
+              >
+                {value === "es" ? t.language.videoEs : t.language.videoEn}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs text-faint">{t.submit.languageHint}</span>
+        </div>
+
         <div className="flex flex-wrap items-center gap-4">
           <button
             type="submit"
             disabled={loading || !url.trim()}
             className="brand-gradient rounded-full px-6 py-3 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Agregando…" : "Publicar en Clusly"}
+            {loading ? t.submit.submitting : t.submit.submitButton}
           </button>
           {!loggedIn && (
-            <span className="text-xs text-muted">
-              No necesitas cuenta para empezar: te la pedimos al confirmar.
-            </span>
+            <span className="text-xs text-muted">{t.submit.guestHint}</span>
           )}
         </div>
       </form>
@@ -253,35 +279,31 @@ export function SubmitForm({
               {result.pending ? (
                 <>
                   <p className="text-sm font-semibold text-foreground">
-                    ¡Gracias! Tu aporte quedó guardado.
+                    {t.submit.pendingTitle}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
-                    Queda pendiente de aprobación: el equipo lo revisa y, si todo está
-                    bien, aparece en el catálogo. Si creas una cuenta, tus próximos
-                    aportes se publican al instante.
-                  </p>
-                  <Link
+                  <p className="mt-1 text-xs text-muted">{t.submit.pendingBody}</p>
+                  <LocaleLink
                     href="/registro?next=/enviar"
                     className="mt-2 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
                   >
-                    Crear cuenta →
-                  </Link>
+                    {t.submit.pendingCta}
+                  </LocaleLink>
                 </>
               ) : (
                 <>
                   <p className="text-sm font-semibold text-foreground">
-                    ¡Gracias! Tu aporte ya está en Clusly.
+                    {t.submit.successTitle}
                   </p>
                   {result.warning && (
                     <p className="mt-1 text-xs text-muted">{result.warning}</p>
                   )}
                   {result.youtubeId && (
-                    <Link
+                    <LocaleLink
                       href={`/recurso/${result.youtubeId}`}
                       className="mt-2 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
                     >
-                      Ver el video →
-                    </Link>
+                      {t.submit.successLink}
+                    </LocaleLink>
                   )}
                 </>
               )}
@@ -291,18 +313,16 @@ export function SubmitForm({
           {result.kind === "duplicate" && (
             <div className="rounded-xl bg-fill p-4 ring-1 ring-border">
               <p className="text-sm font-semibold text-foreground">
-                Ese video ya está en Clusly.
+                {t.submit.duplicateTitle}
               </p>
-              <p className="mt-1 text-xs text-muted">
-                Alguien se te adelantó. Puedes ir a votarlo para que suba.
-              </p>
+              <p className="mt-1 text-xs text-muted">{t.submit.duplicateBody}</p>
               {result.youtubeId && (
-                <Link
+                <LocaleLink
                   href={`/recurso/${result.youtubeId}`}
                   className="mt-2 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
                 >
-                  Verlo →
-                </Link>
+                  {t.submit.duplicateLink}
+                </LocaleLink>
               )}
             </div>
           )}

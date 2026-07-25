@@ -42,6 +42,12 @@ export type CreateResourceResult =
 
 export type ResourceStatus = "published" | "pending";
 
+// Idioma hablado del video. Se normaliza aquí para que ni el panel ni los
+// envíos de la comunidad puedan meter otro valor.
+export function cleanLanguage(input: unknown): "es" | "en" {
+  return input === "en" ? "en" : "es";
+}
+
 export async function createResourceFromUrl(
   admin: SupabaseClient,
   opts: {
@@ -51,6 +57,7 @@ export async function createResourceFromUrl(
     submittedBy?: string | null;
     submittedSession?: string | null;
     status?: ResourceStatus;
+    language?: "es" | "en";
   }
 ): Promise<CreateResourceResult> {
   const target = parseYouTubeUrl(opts.url);
@@ -68,6 +75,7 @@ export async function createResourceFromUrl(
     submittedBy: opts.submittedBy ?? null,
     submittedSession: opts.submittedSession ?? null,
     status: opts.status ?? "published",
+    language: opts.language ?? "es",
   };
 
   return target.kind === "video"
@@ -81,12 +89,13 @@ interface AddOpts {
   submittedBy: string | null;
   submittedSession: string | null;
   status: ResourceStatus;
+  language: "es" | "en";
 }
 
 async function addVideo(
   admin: SupabaseClient,
   videoId: string,
-  { categoryIds, manualTitle, submittedBy, submittedSession, status }: AddOpts
+  { categoryIds, manualTitle, submittedBy, submittedSession, status, language }: AddOpts
 ): Promise<CreateResourceResult> {
   const oembed = await fetchOEmbed(videoId);
   let publishedAt: string | null = null;
@@ -113,6 +122,7 @@ async function addVideo(
       submitted_by: submittedBy,
       submitted_session: submittedSession,
       status,
+      language,
       synced_at: new Date().toISOString(),
     })
     .select("id")
@@ -126,7 +136,7 @@ async function addVideo(
 async function addPlaylist(
   admin: SupabaseClient,
   playlistId: string,
-  { categoryIds, manualTitle, submittedBy, submittedSession, status }: AddOpts
+  { categoryIds, manualTitle, submittedBy, submittedSession, status, language }: AddOpts
 ): Promise<CreateResourceResult> {
   let imported;
   try {
@@ -163,6 +173,7 @@ async function addPlaylist(
       submitted_by: submittedBy,
       submitted_session: submittedSession,
       status,
+      language,
       synced_at: imported ? new Date().toISOString() : null,
     })
     .select("id")

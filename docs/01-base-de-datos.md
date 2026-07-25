@@ -154,6 +154,7 @@ metadatos de la cuenta, que es de donde lo lee `getCurrentUser`.
 | `submitted_by` | uuid (FK → `auth.users`, ON DELETE SET NULL) | Quién aportó el recurso (`null` = curado por el equipo o aporte sin cuenta) |
 | `submitted_session` | text | Sesión anónima que mandó un aporte sin cuenta (solo para el antiflood) |
 | `status` | text | `published` \| `pending` \| `hidden` (CHECK; default `published`). El catálogo público solo ve `published` |
+| `language` | text | `es` \| `en` (CHECK; default `es`). Idioma **hablado del video**, no el de la interfaz |
 | `vote_count` | integer | Suma de votos; la mantiene un trigger (default 0) |
 
 **Aportes sin cuenta.** `/enviar` está abierto a todo el mundo: se llena la URL y las
@@ -348,3 +349,6 @@ Las escrituras siempre pasan por rutas API del servidor con `SUPABASE_SERVICE_RO
 14. **`0007_blog_imagenes`** (`supabase/migrations/`): bucket de Storage `blog`
    (público para leer, 5 MB, solo imágenes, sin políticas de escritura) y columna
    `cover_url` en `blog_posts`.
+15. **`0008_idioma_del_video`** (`supabase/migrations/`): columna `language` en
+   `resources` (`es`/`en`, default `es`) e índice `(language, vote_count desc)` para
+   el filtro de la exploración. Todo lo ya curado queda como español.

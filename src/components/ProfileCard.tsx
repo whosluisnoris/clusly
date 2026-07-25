@@ -14,6 +14,8 @@ import {
   type ProfileLink,
 } from "@/lib/profile";
 import { formatDate } from "@/lib/dates";
+import { useT } from "@/components/I18nProvider";
+import { fmt } from "@/lib/i18n";
 
 // Tarjeta del perfil propio: muestra los datos y, al pulsar "Editar perfil",
 // se convierte en el formulario. Guarda con PATCH /api/profile y refresca para
@@ -35,6 +37,7 @@ export function ProfileCard({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useT();
 
   function cancel() {
     setDisplayName(profile.displayName);
@@ -58,7 +61,7 @@ export function ProfileCard({
     const filled = links.filter((l) => l.url.trim() !== "");
     const invalid = filled.find((l) => !isSafeUrl(l.url.trim()));
     if (invalid) {
-      setError(`"${invalid.url}" no es un enlace válido: debe empezar con https://`);
+      setError(fmt(t.profile.errorLink, { url: invalid.url }));
       return;
     }
 
@@ -77,13 +80,13 @@ export function ProfileCard({
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo guardar tu perfil.");
+        setError(data.error ?? t.profile.errorGeneric);
         return;
       }
       setEditing(false);
       router.refresh();
     } catch {
-      setError("No hay conexión. Intenta de nuevo.");
+      setError(t.common.noConnection);
     } finally {
       setSaving(false);
     }
@@ -115,7 +118,11 @@ export function ProfileCard({
                 )}
                 {profile.location && <span>📍 {profile.location}</span>}
                 {profile.createdAt && (
-                  <span>Desde {formatDate(profile.createdAt)}</span>
+                  <span>
+                    {fmt(t.profile.memberSince, {
+                      date: formatDate(profile.createdAt) ?? "",
+                    })}
+                  </span>
                 )}
               </div>
             </div>
@@ -126,7 +133,7 @@ export function ProfileCard({
             onClick={() => setEditing(true)}
             className="rounded-full bg-fill px-5 py-2.5 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong"
           >
-            Editar perfil
+            {t.profile.editButton}
           </button>
         </div>
 
@@ -135,7 +142,7 @@ export function ProfileCard({
             profile.bio ? "text-foreground" : "text-faint"
           }`}
         >
-          {profile.bio ?? "Todavía no has escrito tu biografía."}
+          {profile.bio ?? t.profile.noBio}
         </p>
 
         {profile.links.length > 0 && (
@@ -163,11 +170,11 @@ export function ProfileCard({
       onSubmit={save}
       className="flex flex-col gap-5 rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-8"
     >
-      <h2 className="text-lg font-bold text-foreground">Editar perfil</h2>
+      <h2 className="text-lg font-bold text-foreground">{t.profile.editTitle}</h2>
 
       <label className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          Nombre visible
+          {t.profile.nameLabel}
         </span>
         <input
           type="text"
@@ -177,14 +184,12 @@ export function ProfileCard({
           required
           className="rounded-lg bg-background px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
-        <span className="text-xs text-faint">
-          Es el nombre con el que firmas tus opiniones y tus aportes.
-        </span>
+        <span className="text-xs text-faint">{t.profile.nameHint}</span>
       </label>
 
       <label className="flex flex-col gap-2">
         <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted">
-          Biografía
+          {t.profile.bioLabel}
           <span className="tabular-nums font-normal normal-case text-faint">
             {bio.length}/{MAX_BIO}
           </span>
@@ -194,33 +199,36 @@ export function ProfileCard({
           onChange={(e) => setBio(e.target.value)}
           maxLength={MAX_BIO}
           rows={4}
-          placeholder="Qué estás aprendiendo, en qué trabajas, qué te gusta compartir…"
+          placeholder={t.profile.bioPlaceholder}
           className="resize-y rounded-lg bg-background px-4 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
       </label>
 
       <label className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          Ubicación
+          {t.profile.locationLabel}
         </span>
         <input
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           maxLength={MAX_LOCATION}
-          placeholder="Ciudad de México, remoto…"
+          placeholder={t.profile.locationPlaceholder}
           className="rounded-lg bg-background px-4 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
       </label>
 
       <div className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          Enlaces <span className="font-normal normal-case text-faint">(hasta {MAX_LINKS})</span>
+          {t.profile.linksLabel}{" "}
+          <span className="font-normal normal-case text-faint">
+            {fmt(t.profile.linksHint, { n: MAX_LINKS })}
+          </span>
         </span>
 
         {links.length === 0 && (
           <p className="text-xs text-faint">
-            Tu sitio, GitHub, LinkedIn, tu canal… lo que quieras compartir.
+            {t.profile.linksEmpty}
           </p>
         )}
 
@@ -231,7 +239,7 @@ export function ProfileCard({
               value={link.label}
               onChange={(e) => updateLink(i, { label: e.target.value })}
               maxLength={MAX_LINK_LABEL}
-              placeholder="Nombre (GitHub…)"
+              placeholder={t.profile.linkName}
               className="rounded-lg bg-background px-3 py-2 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50 sm:w-44"
             />
             <input
@@ -247,7 +255,7 @@ export function ProfileCard({
               aria-label={`Quitar enlace ${i + 1}`}
               className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs text-muted transition hover:bg-fill hover:text-foreground"
             >
-              Quitar
+              {t.profile.linkRemove}
             </button>
           </div>
         ))}
@@ -258,7 +266,7 @@ export function ProfileCard({
             onClick={() => setLinks((prev) => [...prev, { label: "", url: "" }])}
             className="self-start text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
           >
-            + Agregar enlace
+            {t.profile.linkAdd}
           </button>
         )}
       </div>
@@ -271,14 +279,14 @@ export function ProfileCard({
           disabled={saving}
           className="brand-gradient rounded-full px-6 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:opacity-60"
         >
-          {saving ? "Guardando…" : "Guardar cambios"}
+          {saving ? t.common.saving : t.profile.saveChanges}
         </button>
         <button
           type="button"
           onClick={cancel}
           className="rounded-full bg-fill px-6 py-2.5 text-sm font-semibold text-muted ring-1 ring-border transition hover:bg-fill-strong hover:text-foreground"
         >
-          Cancelar
+          {t.common.cancel}
         </button>
       </div>
     </form>

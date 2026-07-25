@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
+import { useT } from "@/components/I18nProvider";
+import { fmt } from "@/lib/i18n";
 
 type Mode = "login" | "signup";
 
@@ -19,13 +21,14 @@ export function AuthForm({
   initialError?: string;
 }) {
   const isSignup = mode === "signup";
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
     initialError === "confirm"
-      ? "No pudimos confirmar tu correo. El enlace pudo expirar; intenta entrar de nuevo."
+      ? t.auth.confirmError
       : null
   );
   const [sent, setSent] = useState(false);
@@ -51,7 +54,7 @@ export function AuthForm({
       };
 
       if (!res.ok) {
-        setError(data.error ?? "Algo salió mal. Intenta de nuevo.");
+        setError(data.error ?? t.auth.genericError);
         return;
       }
 
@@ -63,7 +66,7 @@ export function AuthForm({
       // Sesión iniciada: recarga completa para propagar la sesión al servidor.
       window.location.assign(safeNext);
     } catch {
-      setError("No hay conexión. Revisa tu internet e intenta de nuevo.");
+      setError(t.auth.networkError);
     } finally {
       setLoading(false);
     }
@@ -76,19 +79,17 @@ export function AuthForm({
           ✉️
         </div>
         <h1 className="font-display text-2xl font-black tracking-tight text-foreground">
-          Revisa tu correo
+          {t.auth.checkEmailTitle}
         </h1>
         <p className="mx-auto mt-3 max-w-sm text-sm text-muted">
-          Te enviamos un enlace de confirmación a{" "}
-          <span className="font-semibold text-foreground">{email}</span>. Ábrelo para
-          activar tu cuenta y empezar a aportar videos.
+          {fmt(t.auth.checkEmailBody, { email })}
         </p>
-        <Link
+        <LocaleLink
           href="/entrar"
           className="mt-6 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
         >
-          Volver a entrar
-        </Link>
+          {t.auth.backToSignIn}
+        </LocaleLink>
       </div>
     );
   }
@@ -96,25 +97,23 @@ export function AuthForm({
   return (
     <div>
       <h1 className="font-display text-2xl font-black tracking-tight text-foreground">
-        {isSignup ? "Crea tu cuenta" : "Entra a tu cuenta"}
+        {isSignup ? t.auth.signUpTitle : t.auth.signInTitle}
       </h1>
       <p className="mt-2 text-sm text-muted">
-        {isSignup
-          ? "Aporta videos, clasifícalos y vota por los que ayudan."
-          : "Bienvenido de vuelta a Clusly."}
+        {isSignup ? t.auth.signUpSubtitle : t.auth.signInSubtitle}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
         {isSignup && (
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-              Nombre
+              {t.auth.nameLabel}
             </span>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Cómo te llamas"
+              placeholder={t.auth.namePlaceholder}
               autoComplete="name"
               className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
             />
@@ -123,14 +122,14 @@ export function AuthForm({
 
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Correo
+            {t.auth.emailLabel}
           </span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@correo.com"
+            placeholder={t.auth.emailPlaceholder}
             autoComplete="email"
             className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
@@ -138,14 +137,18 @@ export function AuthForm({
 
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Contraseña
+            {t.auth.passwordLabel}
           </span>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={isSignup ? "Mínimo 8 caracteres" : "Tu contraseña"}
+            placeholder={
+              isSignup
+                ? t.auth.passwordPlaceholderSignUp
+                : t.auth.passwordPlaceholderSignIn
+            }
             autoComplete={isSignup ? "new-password" : "current-password"}
             minLength={isSignup ? 8 : undefined}
             className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
@@ -160,33 +163,33 @@ export function AuthForm({
           className="brand-gradient mt-1 rounded-full px-6 py-3 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading
-            ? "Un momento…"
+            ? t.auth.submitting
             : isSignup
-              ? "Crear cuenta"
-              : "Entrar"}
+              ? t.auth.submitSignUp
+              : t.auth.submitSignIn}
         </button>
       </form>
 
       <p className="mt-6 text-sm text-muted">
         {isSignup ? (
           <>
-            ¿Ya tienes cuenta?{" "}
-            <Link
+            {t.auth.haveAccount}{" "}
+            <LocaleLink
               href="/entrar"
               className="font-semibold text-accent-ink underline decoration-2 underline-offset-4"
             >
-              Entra
-            </Link>
+              {t.auth.haveAccountLink}
+            </LocaleLink>
           </>
         ) : (
           <>
-            ¿Nuevo en Clusly?{" "}
-            <Link
+            {t.auth.noAccount}{" "}
+            <LocaleLink
               href="/registro"
               className="font-semibold text-accent-ink underline decoration-2 underline-offset-4"
             >
-              Crea tu cuenta
-            </Link>
+              {t.auth.noAccountLink}
+            </LocaleLink>
           </>
         )}
       </p>

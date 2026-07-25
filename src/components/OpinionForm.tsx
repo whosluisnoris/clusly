@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 import { getSessionId } from "@/lib/analytics";
-import { SENTIMENTS, SENTIMENT_META, MAX_MESSAGE, type Sentiment } from "@/lib/opinions";
+import { SENTIMENTS, MAX_MESSAGE, type Sentiment } from "@/lib/opinions";
+import { useT } from "@/components/I18nProvider";
+import { fmt } from "@/lib/i18n";
 
 // Formulario de la sección de opiniones: cómo te sientes + qué quieres contar.
 // Funciona sin cuenta (llega como "Anónimo"); con sesión va firmada con el
@@ -19,15 +21,24 @@ export function OpinionForm({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const t = useT();
+
+  // Etiquetas traducidas de cada sentimiento (el emoji vive en el diccionario
+  // de opiniones porque también lo usa el panel).
+  const labels: Record<Sentiment, { emoji: string; label: string }> = {
+    me_encanta: { emoji: "😍", label: t.opinions.sentimentLove },
+    puede_mejorar: { emoji: "🤔", label: t.opinions.sentimentOk },
+    no_me_convence: { emoji: "😕", label: t.opinions.sentimentBad },
+  };
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!sentiment) {
-      setError("Elige cómo te sientes con Clusly.");
+      setError(t.opinions.errorSentiment);
       return;
     }
     if (message.trim().length < 3) {
-      setError("Cuéntanos un poco más (mínimo 3 caracteres).");
+      setError(t.opinions.errorShort);
       return;
     }
 
@@ -45,14 +56,14 @@ export function OpinionForm({
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo enviar tu opinión.");
+        setError(data.error ?? t.opinions.errorGeneric);
         return;
       }
       setSent(true);
       setMessage("");
       setSentiment(null);
     } catch {
-      setError("No se pudo enviar tu opinión, revisa tu conexión.");
+      setError(t.opinions.errorNetwork);
     } finally {
       setSending(false);
     }
@@ -62,17 +73,15 @@ export function OpinionForm({
     return (
       <div className="glass backdrop-blur-md rounded-2xl p-6 text-center">
         <p className="text-sm font-semibold text-foreground">
-          ¡Gracias por escribir! 💚
+          {t.opinions.thanksTitle}
         </p>
-        <p className="mt-1.5 text-sm text-muted">
-          Ya nos llegó tu mensaje. Lo leemos todo.
-        </p>
+        <p className="mt-1.5 text-sm text-muted">{t.opinions.thanksBody}</p>
         <button
           type="button"
           onClick={() => setSent(false)}
           className="mt-4 text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
         >
-          Escribir otra
+          {t.opinions.writeAnother}
         </button>
       </div>
     );
@@ -82,11 +91,11 @@ export function OpinionForm({
     <form onSubmit={submit} className="glass backdrop-blur-md rounded-2xl p-5 sm:p-6">
       <fieldset>
         <legend className="text-sm font-bold text-foreground">
-          ¿Cómo te sientes con Clusly?
+          {t.opinions.sentimentQuestion}
         </legend>
         <div className="mt-3 flex flex-wrap gap-2.5">
           {SENTIMENTS.map((value) => {
-            const { emoji, label } = SENTIMENT_META[value];
+            const { emoji, label } = labels[value];
             const active = sentiment === value;
             return (
               <button
@@ -111,7 +120,7 @@ export function OpinionForm({
         htmlFor="opinion-message"
         className="mt-5 block text-sm font-bold text-foreground"
       >
-        ¿Qué nos quieres contar?
+        {t.opinions.messageLabel}
       </label>
       <textarea
         id="opinion-message"
@@ -119,26 +128,24 @@ export function OpinionForm({
         onChange={(e) => setMessage(e.target.value)}
         maxLength={MAX_MESSAGE}
         rows={4}
-        placeholder="Qué te sirve, qué te falta, qué agregarías…"
+        placeholder={t.opinions.messagePlaceholder}
         className="mt-2 w-full resize-y rounded-xl bg-fill px-3.5 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
       />
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-muted">
           {displayName ? (
-            <>
-              Se enviará firmada como <b className="text-foreground">{displayName}</b>.
-            </>
+            <>{fmt(t.opinions.signedAs, { name: displayName })}</>
           ) : (
             <>
-              Se enviará como <b className="text-foreground">Anónimo</b>.{" "}
-              <Link
+              {t.opinions.anonAs}{" "}
+              <LocaleLink
                 href="/entrar?next=/opiniones"
                 className="text-accent-ink underline underline-offset-2"
               >
-                Entra
-              </Link>{" "}
-              si quieres firmarla.
+                {t.opinions.signInToSign}
+              </LocaleLink>{" "}
+              {t.opinions.signInToSignAfter}
             </>
           )}
         </p>
@@ -151,7 +158,7 @@ export function OpinionForm({
             disabled={sending}
             className="brand-gradient rounded-full px-5 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:opacity-60"
           >
-            {sending ? "Enviando…" : "Enviar opinión"}
+            {sending ? t.common.sending : t.opinions.submit}
           </button>
         </div>
       </div>

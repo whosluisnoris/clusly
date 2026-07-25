@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/components/I18nProvider";
 
 type Theme = "dark" | "light";
 
@@ -9,6 +10,7 @@ type Theme = "dark" | "light";
 // se cambia, persistiendo la elección en localStorage.
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const [theme, setTheme] = useState<Theme>("dark");
+  const t = useT();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -33,8 +35,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   return (
     <button
       onClick={toggle}
-      aria-label={theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
-      title={theme === "dark" ? "Tema claro" : "Tema oscuro"}
+      aria-label={theme === "dark" ? t.theme.toLight : t.theme.toDark}
+      title={theme === "dark" ? t.theme.light : t.theme.dark}
       className={`grid h-9 w-9 place-items-center rounded-full border border-border text-foreground transition hover:bg-fill ${className}`}
     >
       {/* Evita divergencia de hidratación: sin icono hasta montar */}

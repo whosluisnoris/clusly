@@ -60,8 +60,12 @@ video); el reproductor añade además la fecha absoluta.
 - **`AuthNav`**: sin sesión muestra "Aportar video", "Entrar" y "Crear cuenta" (CTA);
   con sesión, botón "Aportar video" + menú con "Guardados", "Mis videos" y "Cerrar
   sesión".
-- **`ExploreFilters`** (`/todo`): filtros de categoría (chips) + orden (más votados /
-  recientes), con el estado en la URL (`?cat=…&sort=…`).
+- **`ExploreFilters`** (`/todo`): filtros de categoría (chips), orden (más votados /
+  recientes) e **idioma hablado del video**, con el estado en la URL
+  (`?cat=…&sort=…&lang=es|en`).
+  > Ojo con los dos "idiomas": el prefijo de la ruta (`/es`, `/en`) es el de la
+  > **interfaz**; el `?lang=` de la query es el del **video**. Son independientes: se
+  > puede leer la interfaz en inglés y filtrar videos en español.
 
 ## Guardados (favoritos)
 
@@ -89,7 +93,7 @@ definitivamente. Enlazada desde la barra y el pie de página.
 
 ## Perfil
 
-**`/perfil`** ([página](../src/app/(catalog)/perfil/page.tsx)) reúne la información de
+**`/perfil`** ([página](../src/app/[lang]/(catalog)/perfil/page.tsx)) reúne la información de
 la cuenta: avatar con la inicial, nombre, correo, distintivo de rol (solo staff),
 ubicación y desde cuándo es miembro. Debajo, la biografía y los enlaces, y un resumen
 de actividad (aportes, guardados, votos y opiniones) donde cada tarjeta lleva a su
@@ -100,6 +104,47 @@ formulario en el mismo sitio: nombre visible, biografía (300 caracteres con con
 ubicación y hasta 6 enlaces con etiqueta. Guarda con `PATCH /api/profile` y refresca la
 página para que la barra y las opiniones firmadas vean el nombre nuevo. Los enlaces se
 abren con `rel="noopener noreferrer nofollow"` y solo si son `http`/`https`.
+
+## Idiomas (español / inglés)
+
+La plataforma pública vive bajo **`/es` o `/en`**; el panel `/admin` y las APIs no
+llevan prefijo (`UNLOCALIZED_PREFIXES` en `src/lib/i18n/config.ts`).
+
+**El español es el idioma base y el de respaldo**, no por gusto sino porque el catálogo
+son videos en español: quien llega sin una preferencia clara debe caer en español. El
+inglés solo aparece si el navegador lo pide antes que el español.
+
+- **Detección**: por la cabecera `Accept-Language` (la preferencia que el usuario
+  configuró de verdad), **no por país** — hay millones de hispanohablantes fuera de
+  Latinoamérica y España, y un turista en México no habla español por estar ahí.
+- **Elección manual**: el botón ES/EN de la barra
+  ([`LanguageToggle`](../src/components/LanguageToggle.tsx)) lleva a la misma ruta con
+  el otro prefijo y guarda la elección en cookie. A partir de ahí **manda sobre la
+  detección**: a quien eligió a mano no se le vuelve a cambiar solo.
+- El [`proxy`](../src/proxy.ts) redirige lo que llegue sin prefijo y anota el idioma en
+  la cookie al navegar.
+
+### Cómo se traduce
+
+| Pieza | Qué hace |
+|---|---|
+| [`dictionaries/es.ts`](../src/lib/i18n/dictionaries/es.ts) | Diccionario base. `en.ts` está **tipado contra él**: agregar una clave rompe el build hasta traducirla |
+| [`I18nProvider`](../src/components/I18nProvider.tsx) | Publica el diccionario al árbol de cliente (`useT()`), montado en el layout de `[lang]` |
+| [`LocaleLink`](../src/components/LocaleLink.tsx) | `next/link` que antepone el idioma; sirve igual desde Server y Client Components |
+| `getDictionary(lang)` | Para Server Components, que reciben `params.lang` |
+
+Los valores del diccionario son **siempre cadenas** (cruzan la frontera
+servidor → cliente, así que no pueden ser funciones). Para los huecos hay `fmt()` con
+`{clave}` y para los plurales `plural()` con `{ one, other }`.
+
+**El panel `/admin` se queda en español**: lo usa el staff, no los visitantes.
+
+### Lo que la traducción no alcanza
+
+Los títulos de los videos, las descripciones de categorías y los artículos del blog son
+**datos**, no cadenas de UI: siguen en el idioma en que se escribieron. Por eso existe
+el filtro de idioma del video — para que quien lee en inglés pueda quedarse con lo que
+sí va a entender.
 
 ## Blog
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
+import { useT } from "@/components/I18nProvider";
 import type { SessionUser } from "@/lib/auth";
 
 // Controles de sesión para la barra de navegación. Sin sesión: enlaces de entrar
@@ -9,6 +10,7 @@ import type { SessionUser } from "@/lib/auth";
 export function AuthNav({ user }: { user: SessionUser | null }) {
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const t = useT();
 
   async function logout() {
     setLoggingOut(true);
@@ -23,24 +25,24 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
     return (
       <div className="flex shrink-0 items-center gap-1.5">
         {/* Aportar está abierto sin cuenta: la sesión se pide al confirmar */}
-        <Link
+        <LocaleLink
           href="/enviar"
           className="hidden rounded-full bg-fill px-3.5 py-2 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong sm:inline-block"
         >
-          + Aportar video
-        </Link>
-        <Link
+          {t.nav.submit}
+        </LocaleLink>
+        <LocaleLink
           href="/entrar"
           className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:text-foreground sm:inline-block"
         >
-          Entrar
-        </Link>
-        <Link
+          {t.nav.signIn}
+        </LocaleLink>
+        <LocaleLink
           href="/registro"
           className="brand-gradient rounded-full px-4 py-2 text-sm font-bold text-on-accent transition hover:brightness-110 active:scale-95"
         >
-          Crear cuenta
-        </Link>
+          {t.nav.signUp}
+        </LocaleLink>
       </div>
     );
   }
@@ -49,12 +51,12 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
 
   return (
     <div className="flex shrink-0 items-center gap-2">
-      <Link
+      <LocaleLink
         href="/enviar"
         className="hidden rounded-full bg-fill px-3.5 py-2 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong sm:inline-block"
       >
-        + Aportar video
-      </Link>
+        {t.nav.submit}
+      </LocaleLink>
 
       <div className="relative">
         <button
@@ -83,16 +85,16 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
             >
               <div className="truncate px-3 py-2 text-xs text-faint">{user.email}</div>
               <MenuLink href="/perfil" onClick={() => setOpen(false)}>
-                Mi perfil
+                {t.nav.myProfile}
               </MenuLink>
               <MenuLink href="/guardados" onClick={() => setOpen(false)}>
-                Guardados
+                {t.nav.saved}
               </MenuLink>
               <MenuLink href="/mis-videos" onClick={() => setOpen(false)}>
-                Mis videos
+                {t.nav.myVideos}
               </MenuLink>
               <MenuLink href="/enviar" onClick={() => setOpen(false)}>
-                Aportar video
+                {t.nav.submitShort}
               </MenuLink>
               <button
                 type="button"
@@ -101,7 +103,7 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
                 disabled={loggingOut}
                 className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-muted transition hover:bg-fill hover:text-foreground disabled:opacity-60"
               >
-                {loggingOut ? "Saliendo…" : "Cerrar sesión"}
+                {loggingOut ? t.nav.signingOut : t.nav.signOut}
               </button>
             </div>
           </>
@@ -121,13 +123,13 @@ function MenuLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link
+    <LocaleLink
       href={href}
       role="menuitem"
       onClick={onClick}
       className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground transition hover:bg-fill"
     >
       {children}
-    </Link>
+    </LocaleLink>
   );
 }

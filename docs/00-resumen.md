@@ -10,8 +10,8 @@ videos dispersos.
 - **Landing (`/`)**: presenta la plataforma (qué resuelve, cómo funciona) e invita
   a explorar el catálogo.
 - **Explorar (`/todo`)**: cuadrícula de **recursos** (playlists curadas y videos
-  sueltos) filtrable por categoría y orden (más votados / recientes), con el estado
-  en la URL. Cada tarjeta muestra sus categorías. Al abrir un recurso se reproduce
+  sueltos) filtrable por categoría, orden (más votados / recientes) e **idioma del
+  video**, con el estado en la URL. Cada tarjeta muestra sus categorías. Al abrir un recurso se reproduce
   en un `<iframe>` de YouTube; las playlists muestran reproductor + lista de episodios.
 - **Cuentas, envíos y votación**: registro/login con confirmación por correo
   (Supabase Auth + Resend). Cualquiera aporta videos (`/enviar`) — sin cuenta el
@@ -24,6 +24,9 @@ videos dispersos.
   cuenta). Lo que se escribe **no se publica**: se lee solo desde el panel.
 - **Perfil (`/perfil`)**: los datos de la cuenta, biografía, ubicación y enlaces
   editables, más el resumen de actividad del usuario.
+- **Idiomas (`/es`, `/en`)**: la interfaz está en español e inglés. El idioma se
+  detecta por el navegador (`Accept-Language`) y se puede cambiar con el botón ES/EN,
+  que recuerda la elección. El panel `/admin` se queda en español.
 - **Blog (`/blog`)**: artículos en Markdown, con portada e imágenes que se suben a
   un bucket de Supabase Storage. Solo los escribe y publica el staff
   (`owner`/`admin`) desde la pestaña Blog del panel; el resto solo lee.
@@ -100,7 +103,8 @@ Supabase (Postgres + Auth + Storage)
 
 | Decisión | Elección | Motivo |
 |---|---|---|
-| Idioma de la UI | Español | Audiencia de Platzi |
+| Idioma de la UI | Español por defecto, inglés opcional | El catálogo son videos en español: quien llega sin preferencia debe caer en español |
+| Detección de idioma | `Accept-Language`, no geo-IP | El país no es el idioma: hay hispanohablantes en todo el mundo y el navegador ya dice la preferencia real |
 | Video inicial | Platzi Live activo → si no, lofi | No perderse ningún live real |
 | Analítica | Eventos + sesión anónima | Medir interés sin datos personales |
 | Fecha principal | `live_started_at` (inicio real del live) | El `publishDate` de YouTube a veces difiere semanas del live real |

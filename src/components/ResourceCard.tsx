@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 import type { ResourceRow } from "@/lib/types";
 import type { CategoryTag } from "@/lib/catalog";
 import { formatDuration, timeAgo } from "@/lib/dates";
+import { useT } from "@/components/I18nProvider";
+import { plural } from "@/lib/i18n";
 import { VoteControl } from "@/components/VoteControl";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
@@ -33,6 +35,7 @@ export function ResourceCard({
   saved?: boolean;
   removeOnUnsave?: boolean;
 }) {
+  const t = useT();
   const [imgError, setImgError] = useState(false);
   const thumbnailUrl = imgError
     ? `https://i.ytimg.com/vi/${resource.youtube_id}/hqdefault.jpg`
@@ -44,7 +47,7 @@ export function ResourceCard({
   const line = accent || "var(--accent)";
 
   const meta = isPlaylist
-    ? `${resource.video_count ?? 0} ${resource.video_count === 1 ? "video" : "videos"}`
+    ? plural(t.card.videoCount, resource.video_count ?? 0)
     : formatDuration(resource.duration_seconds) ?? timeAgo(resource.published_at) ?? "";
 
   return (
@@ -68,7 +71,7 @@ export function ResourceCard({
         removeOnUnsave={removeOnUnsave}
       />
 
-      <Link href={href} className="flex flex-1 flex-col">
+      <LocaleLink href={href} className="flex flex-1 flex-col">
         <div className="relative aspect-video w-full overflow-hidden bg-elevated">
           {resource.thumbnail_url || resource.kind === "video" ? (
             <Image
@@ -83,7 +86,7 @@ export function ResourceCard({
           ) : (
             <div className="flex h-full items-center justify-center">
               <span className="text-xs font-bold uppercase tracking-widest text-faint">
-                Playlist
+                {t.card.playlist}
               </span>
             </div>
           )}
@@ -92,7 +95,15 @@ export function ResourceCard({
               className="absolute bottom-2 right-2 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-on-accent"
               style={{ backgroundColor: line }}
             >
-              {resource.video_count ?? 0} videos
+              {plural(t.card.videoCount, resource.video_count ?? 0)}
+            </span>
+          )}
+
+          {/* Idioma hablado del video: solo se marca el que no es español,
+              porque el catálogo es mayoritariamente español. */}
+          {resource.language === "en" && (
+            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+              EN
             </span>
           )}
         </div>
@@ -127,7 +138,7 @@ export function ResourceCard({
             </div>
           )}
         </div>
-      </Link>
+      </LocaleLink>
 
       <div className="flex items-center justify-between gap-2 px-3.5 pb-3">
         <VoteControl

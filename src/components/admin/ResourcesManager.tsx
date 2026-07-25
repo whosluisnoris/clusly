@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import type { Category, ResourceRow, PlaylistItemRow } from "@/lib/types";
+import type {
+  Category,
+  ResourceRow,
+  PlaylistItemRow,
+  ResourceLanguage,
+} from "@/lib/types";
 import { parseYouTubeUrl } from "@/lib/youtube-url";
 import { CategoryMultiSelect } from "@/components/CategoryMultiSelect";
 
@@ -14,6 +19,8 @@ export function ResourcesManager() {
   const [resources, setResources] = useState<AdminResource[]>([]);
   const [url, setUrl] = useState("");
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
+  // Idioma hablado del video que se está dando de alta.
+  const [language, setLanguage] = useState<ResourceLanguage>("es");
   const [manualTitle, setManualTitle] = useState("");
   const [showTitle, setShowTitle] = useState(false);
   const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
@@ -64,6 +71,7 @@ export function ResourcesManager() {
       body: JSON.stringify({
         url,
         categoryIds: selectedCats,
+        language,
         title: manualTitle.trim() || undefined,
       }),
     });
@@ -71,6 +79,7 @@ export function ResourcesManager() {
     if (res.ok) {
       setUrl("");
       setSelectedCats([]);
+      setLanguage("es");
       setManualTitle("");
       setShowTitle(false);
       setStatus({
@@ -92,6 +101,16 @@ export function ResourcesManager() {
       body: JSON.stringify({ id, categoryIds: editCats }),
     });
     setEditId(null);
+    await load();
+  }
+
+  // Cambia el idioma hablado de un recurso ya guardado.
+  async function changeLanguage(id: string, next: ResourceLanguage) {
+    await fetch("/api/admin/resources", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ id, language: next }),
+    });
     await load();
   }
 
@@ -170,6 +189,27 @@ export function ResourcesManager() {
             onChange={setSelectedCats}
           />
         </div>
+
+        <div>
+          <p className="mb-2 text-xs text-muted">Idioma del video:</p>
+          <div className="flex gap-2">
+            {(["es", "en"] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setLanguage(value)}
+                aria-pressed={language === value}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                  language === value
+                    ? "bg-accent text-on-accent"
+                    : "bg-fill text-muted ring-1 ring-border hover:text-foreground"
+                }`}
+              >
+                {value === "es" ? "Español" : "Inglés"}
+              </button>
+            ))}
+          </div>
+        </div>
       </form>
 
       {status && (
@@ -233,9 +273,21 @@ export function ResourcesManager() {
                     )}
                     <span className="truncate">{r.title}</span>
                   </p>
-                  <p className="mt-0.5 truncate text-xs text-faint">
-                    {r.channel_title ? `${r.channel_title} · ` : ""}
-                    {r.youtube_id}
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 truncate text-xs text-faint">
+                    <span>
+                      {r.channel_title ? `${r.channel_title} · ` : ""}
+                      {r.youtube_id}
+                    </span>
+                    <span>·</span>
+                    <button
+                      onClick={() =>
+                        changeLanguage(r.id, r.language === "es" ? "en" : "es")
+                      }
+                      title="Cambiar el idioma hablado del video"
+                      className="rounded bg-fill px-1.5 py-0.5 font-bold uppercase text-muted transition hover:text-accent-ink"
+                    >
+                      {r.language === "en" ? "EN" : "ES"}
+                    </button>
                   </p>
 
                   {/* Categorías del recurso */}

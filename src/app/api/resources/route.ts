@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createResourceFromUrl, cleanCategoryIds } from "@/lib/resources";
+import { createResourceFromUrl, cleanCategoryIds, cleanLanguage } from "@/lib/resources";
 import { parseYouTubeUrl } from "@/lib/youtube-url";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
     submittedBy: user?.id ?? null,
     submittedSession: user ? null : session,
     status: user ? "published" : "pending",
+    language: cleanLanguage(body.language),
   });
 
   if (!result.ok) {

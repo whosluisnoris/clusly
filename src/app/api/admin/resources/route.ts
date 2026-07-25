@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { authorizeAdmin } from "@/lib/admin-auth";
-import { createResourceFromUrl, setCategories, cleanCategoryIds } from "@/lib/resources";
+import {
+  createResourceFromUrl,
+  setCategories,
+  cleanCategoryIds,
+  cleanLanguage,
+} from "@/lib/resources";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -40,6 +45,7 @@ export async function POST(request: NextRequest) {
     categoryIds,
     manualTitle,
     submittedBy: null,
+    language: cleanLanguage(body.language),
   });
 
   if (!result.ok) {
@@ -83,6 +89,10 @@ export async function PATCH(request: NextRequest) {
     body.status === "hidden"
   ) {
     updates.status = body.status;
+  }
+  // Idioma hablado del video (alimenta el filtro de la exploración).
+  if (body.language === "es" || body.language === "en") {
+    updates.language = body.language;
   }
   if (Object.keys(updates).length > 0) {
     const { error } = await admin.from("resources").update(updates).eq("id", id);

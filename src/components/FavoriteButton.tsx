@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useT, useLocalePath } from "@/components/I18nProvider";
 
 // Corazón para guardar un video o playlist. Dos presentaciones:
 //   · "floating" — flota en la esquina de la tarjeta del grid. Solo aparece al
@@ -28,13 +29,15 @@ export function FavoriteButton({
   const [pending, setPending] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const t = useT();
+  const localePath = useLocalePath();
 
   async function toggle(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
 
     if (!canSave) {
-      router.push(`/entrar?next=${encodeURIComponent(pathname)}`);
+      router.push(`${localePath("/entrar")}?next=${encodeURIComponent(pathname)}`);
       return;
     }
     if (pending) return;
@@ -60,7 +63,7 @@ export function FavoriteButton({
     }
   }
 
-  const label = saved ? "Quitar de guardados" : "Guardar";
+  const label = saved ? t.card.unsave : t.card.save;
 
   if (variant === "inline") {
     return (
@@ -76,7 +79,7 @@ export function FavoriteButton({
         }`}
       >
         <Heart filled={saved} className="h-4 w-4" />
-        {saved ? "Guardado" : "Guardar"}
+        {saved ? t.card.saved : t.card.save}
       </button>
     );
   }

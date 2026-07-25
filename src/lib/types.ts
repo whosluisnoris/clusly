@@ -12,6 +12,10 @@ export interface Category {
 
 export type ResourceKind = "video" | "playlist";
 
+// Idioma hablado del video (no el de la interfaz). Lo elige quien lo aporta y
+// alimenta el filtro de idioma de la exploración.
+export type ResourceLanguage = "es" | "en";
+
 // Recurso del catálogo (tal como llega de la tabla `resources`).
 export interface ResourceRow {
   id: string;
@@ -28,6 +32,7 @@ export interface ResourceRow {
   synced_at: string | null;
   source: string;
   vote_count: number;
+  language: ResourceLanguage;
   submitted_by?: string | null;
   status?: string;
 }

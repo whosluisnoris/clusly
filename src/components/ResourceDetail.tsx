@@ -5,6 +5,7 @@ import { PlayerPanel } from "@/components/PlayerPanel";
 import { VideoListItem } from "@/components/VideoListItem";
 import { trackEvent } from "@/lib/analytics";
 import type { Playable } from "@/lib/types";
+import { useT } from "@/components/I18nProvider";
 
 // Detalle de un recurso. Para un video suelto, solo el reproductor. Para una
 // playlist, reproductor + lista de episodios (mismo layout que Platzi Lives),
@@ -16,6 +17,7 @@ export function ResourceDetail({
   main: Playable;
   episodes: Playable[] | null;
 }) {
+  const t = useT();
   const isPlaylist = episodes !== null && episodes.length > 0;
   const [chosen, setChosen] = useState<Playable | null>(null);
   const displayed = chosen ?? (isPlaylist ? episodes[0] : main);
@@ -37,7 +39,7 @@ export function ResourceDetail({
   if (!isPlaylist) {
     return (
       <div className="mx-auto w-full max-w-3xl">
-        <PlayerPanel stream={main} autoplay={false} dateVerb="Publicado" />
+        <PlayerPanel stream={main} autoplay={false} dateVerb={t.resource.publishedVerb} />
       </div>
     );
   }
@@ -45,11 +47,15 @@ export function ResourceDetail({
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px] xl:grid-cols-[minmax(0,1fr)_430px]">
       <div>
-        <PlayerPanel stream={displayed} autoplay={chosen !== null} dateVerb="Publicado" />
+        <PlayerPanel
+          stream={displayed}
+          autoplay={chosen !== null}
+          dateVerb={t.resource.publishedVerb}
+        />
       </div>
       <aside className="glass backdrop-blur-md custom-scroll flex max-h-[75vh] flex-col gap-3 rounded-2xl p-4 sm:p-5 lg:overflow-y-auto">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
-          Episodios <span className="text-faint">({episodes.length})</span>
+          {t.resource.episodes} <span className="text-faint">({episodes.length})</span>
         </h2>
         {episodes.map((ep) => (
           <VideoListItem

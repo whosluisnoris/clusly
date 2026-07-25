@@ -1,12 +1,17 @@
 import { getSupabase } from "@/lib/supabase";
-import type { Category, ResourceRow, PlaylistItemRow } from "@/lib/types";
+import type {
+  Category,
+  ResourceRow,
+  PlaylistItemRow,
+  ResourceLanguage,
+} from "@/lib/types";
 
 // Lecturas del catálogo desde Server Components. Usan el cliente anon (la RLS
 // permite SELECT público en categories/resources/playlist_items), así que no
 // hace falta una capa /api para leer — solo las escrituras pasan por /api/admin.
 
 const RESOURCE_COLS =
-  "id, kind, youtube_id, title, channel_title, description, thumbnail_url, video_count, duration_seconds, published_at, added_at, synced_at, source, vote_count";
+  "id, kind, youtube_id, title, channel_title, description, thumbnail_url, video_count, duration_seconds, published_at, added_at, synced_at, source, vote_count, language";
 
 export async function getActiveCategories(): Promise<Category[]> {
   const { data } = await getSupabase()
@@ -57,12 +62,16 @@ export type ResourceSort = "top" | "new";
 export async function getResourcesFiltered(opts: {
   categorySlugs?: string[];
   sort?: ResourceSort;
+  language?: ResourceLanguage | null;
 }): Promise<ResourceRow[]> {
   const sort = opts.sort ?? "top";
   const orderCol = sort === "new" ? "added_at" : "vote_count";
   const supabase = getSupabase();
 
   let query = supabase.from("resources").select(RESOURCE_COLS);
+
+  // Idioma hablado del video (distinto del idioma de la interfaz).
+  if (opts.language) query = query.eq("language", opts.language);
 
   const slugs = opts.categorySlugs?.filter(Boolean) ?? [];
   if (slugs.length > 0) {

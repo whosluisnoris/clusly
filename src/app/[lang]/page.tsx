@@ -5,11 +5,14 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_NAME } from "@/lib/constants";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { HowToAddVideo } from "@/components/HowToAddVideo";
+import { catColor } from "@/lib/color";
 import {
   getDictionary,
   isLocale,
   fmt,
   plural,
+  localizeCategory,
   DEFAULT_LOCALE,
 } from "@/lib/i18n";
 
@@ -36,6 +39,9 @@ export default async function LandingPage({
     getCategoryResourceCounts(),
     getCurrentUser(),
   ]);
+
+  // Las temáticas vienen de la base en español; el diccionario las traduce.
+  const localizedCategories = categories.map((c) => ({ ...c, ...localizeCategory(c, t) }));
 
   // Firma de la landing: degradado que mezcla toda la paleta (definido por tema
   // en globals.css). El acento naranja es único, así que la mezcla vive aquí.
@@ -122,10 +128,17 @@ export default async function LandingPage({
         </div>
       </section>
 
-      {/* Temáticas — cada una con su color predominante */}
+      {/* Cómo aportar un video: los pasos a la izquierda, la pantalla de cada
+          uno a la derecha. Las categorías reales alimentan la maqueta del paso
+          en el que se eligen. */}
+      <HowToAddVideo categories={localizedCategories.map((c) => c.name)} />
+
+      {/* Temáticas — cuadrícula de tarjetas, cada una con su color. En tarjetas
+          y no en filas a lo ancho: son doce, y en filas obligaban a recorrer
+          una pantalla entera de scroll para verlas todas. */}
       {categories.length > 0 && (
         <section className="mx-auto w-full max-w-[1500px] px-5 py-12 sm:px-8">
-          <div className="mb-2 flex items-end justify-between">
+          <div className="mb-5 flex items-end justify-between">
             <h2 className="text-2xl font-black tracking-tight text-foreground">
               {t.landing.topicsTitle}
             </h2>
@@ -137,37 +150,51 @@ export default async function LandingPage({
             </LocaleLink>
           </div>
 
-          <div className="border-t border-border">
-            {categories.map((c) => {
+          {/* Dos columnas ya desde el móvil: en una sola, doce tarjetas salen
+              más largas que las filas que sustituyen. La descripción solo
+              aparece a partir de `sm`, donde la tarjeta tiene ancho para ella. */}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+            {localizedCategories.map((c) => {
               const n = counts.get(c.id) ?? 0;
+              // `catColor` ignora a propósito el color guardado en la DB: esta
+              // paleta es monocroma con un solo acento.
+              const line = catColor(c.color);
               return (
                 <LocaleLink
                   key={c.id}
                   href={`/categoria/${c.slug}`}
-                  className="group flex items-center gap-5 border-b border-border py-6 transition hover:bg-fill"
+                  style={{ ["--line" as string]: line }}
+                  className="group flex flex-col gap-2 rounded-xl bg-surface p-3 ring-1 ring-border transition hover:ring-2 hover:ring-[var(--line)] sm:p-4"
                 >
-                  <span
-                    className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-on-complement transition group-hover:scale-105"
-                    style={{ backgroundColor: "var(--complement)" }}
-                  >
-                    <CategoryIcon slug={c.slug} className="h-6 w-6" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-                      {c.name}
-                    </h3>
-                    {c.description && (
-                      <p className="mt-0.5 truncate text-sm text-muted">{c.description}</p>
-                    )}
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-on-complement transition group-hover:scale-105 sm:h-10 sm:w-10"
+                      style={{ backgroundColor: "var(--complement)" }}
+                    >
+                      <CategoryIcon slug={c.slug} className="h-5 w-5" />
+                    </span>
+                    <span
+                      className="shrink-0 text-lg text-muted transition group-hover:translate-x-1 group-hover:text-foreground"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
                   </div>
-                  <span className="shrink-0 text-sm text-muted">
+
+                  <h3 className="text-base font-bold leading-tight tracking-tight text-foreground sm:text-lg">
+                    {c.name}
+                  </h3>
+
+                  {c.description && (
+                    <div className="hidden sm:block">
+                      <p className="line-clamp-2 text-sm leading-snug text-muted">
+                        {c.description}
+                      </p>
+                    </div>
+                  )}
+
+                  <span className="mt-auto pt-1 text-xs text-faint">
                     {plural(t.landing.resourceCount, n)}
-                  </span>
-                  <span
-                    className="shrink-0 text-xl text-complement transition group-hover:translate-x-1"
-                    aria-hidden="true"
-                  >
-                    →
                   </span>
                 </LocaleLink>
               );

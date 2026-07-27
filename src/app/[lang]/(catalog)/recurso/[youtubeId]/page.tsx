@@ -13,7 +13,14 @@ import { ResourceDetail } from "@/components/ResourceDetail";
 import { VoteControl } from "@/components/VoteControl";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import type { Playable } from "@/lib/types";
-import { getDictionary, isLocale, fmt, DEFAULT_LOCALE, type Dictionary } from "@/lib/i18n";
+import {
+  getDictionary,
+  isLocale,
+  fmt,
+  localizeCategory,
+  DEFAULT_LOCALE,
+  type Dictionary,
+} from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +34,8 @@ async function backTarget(from: string | undefined, t: Dictionary) {
   if (from && ownPages[from]) return ownPages[from];
   if (from && from !== "todo") {
     const cat = await getCategoryBySlug(from);
-    if (cat) return { href: `/categoria/${cat.slug}`, label: cat.name };
+    if (cat)
+      return { href: `/categoria/${cat.slug}`, label: localizeCategory(cat, t).name };
   }
   return { href: "/todo", label: t.resource.backAll };
 }

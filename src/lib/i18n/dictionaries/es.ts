@@ -90,6 +90,78 @@ export const es = {
     topicsTitle: "Explora por temática",
     seeAll: "Ver todo →",
     resourceCount: { one: "{n} recurso", other: "{n} recursos" },
+    howToEyebrow: "Aporta a la comunidad",
+    howToTitle: "Cómo agregar un video",
+    howToSubtitle:
+      "El catálogo lo llena la gente que aprende aquí. Si un video te sirvió, súbelo: son cuatro pasos y no llega al minuto.",
+    howToStep1Title: "Copia el enlace en YouTube",
+    howToStep1Text:
+      "Sirve un video suelto o una playlist completa. Con el enlace basta: el título, la miniatura y la duración los sacamos nosotros.",
+    howToStep2Title: "Pégalo en Clusly",
+    howToStep2Text:
+      "Abre «Aportar video» y pega el enlace. Si alguien ya lo subió te avisamos ahí mismo y te llevamos al que ya está.",
+    howToStep3Title: "Elige temáticas e idioma",
+    howToStep3Text:
+      "Marca las categorías donde encaja y en qué idioma está hablado. Es lo que hace que otra persona lo encuentre cuando le haga falta.",
+    howToStep4Title: "Publica y deja que la comunidad vote",
+    howToStep4Text:
+      "Con tu cuenta aparece al instante en el catálogo; sin ella queda pendiente de revisión. De ahí en adelante, los votos lo hacen subir.",
+  },
+
+  // Nombre y descripción de cada temática, por slug. El catálogo vive en la
+  // base de datos, pero las temáticas son un conjunto conocido y fijo, así que
+  // se traducen aquí en vez de duplicar columnas por idioma. Una temática nueva
+  // creada desde el panel no está en este mapa: `localizeCategory` cae al
+  // nombre de la base y sigue funcionando.
+  categories: {
+    tecnologia: {
+      name: "Tecnología",
+      description: "Fundamentos y novedades de tecnología",
+    },
+    programacion: {
+      name: "Programación",
+      description: "Lenguajes, algoritmos y buenas prácticas",
+    },
+    web: {
+      name: "Web",
+      description: "Frontend, backend y todo lo del navegador",
+    },
+    ia: {
+      name: "IA",
+      description: "Inteligencia artificial y machine learning",
+    },
+    agentes: {
+      name: "Agentes",
+      description: "Agentes autónomos y orquestación de LLMs",
+    },
+    datos: {
+      name: "Datos",
+      description: "Ingeniería y análisis de datos",
+    },
+    diseno: {
+      name: "Diseño",
+      description: "UI, UX y diseño de producto",
+    },
+    producto: {
+      name: "Producto",
+      description: "Gestión y estrategia de producto",
+    },
+    devops: {
+      name: "DevOps",
+      description: "Infraestructura, CI/CD y nube",
+    },
+    ciberseguridad: {
+      name: "Ciberseguridad",
+      description: "Seguridad ofensiva y defensiva",
+    },
+    movil: {
+      name: "Móvil",
+      description: "Desarrollo iOS, Android y multiplataforma",
+    },
+    carrera: {
+      name: "Carrera",
+      description: "Empleo, soft skills y crecimiento profesional",
+    },
   },
 
   explore: {

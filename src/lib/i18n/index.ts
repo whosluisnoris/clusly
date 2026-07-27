@@ -24,6 +24,24 @@ export function fmt(
   );
 }
 
+// Nombre y descripción de una temática en el idioma activo. Las temáticas
+// vienen de la base de datos en español; el diccionario las traduce por slug.
+// Si el slug no está traducido (una temática nueva creada desde el panel) se
+// devuelve tal cual viene de la base, que siempre es mejor que nada.
+export function localizeCategory<
+  T extends { slug: string; name: string; description?: string | null },
+>(category: T, t: Dictionary): { name: string; description: string | null } {
+  const translations = t.categories as Record<
+    string,
+    { name: string; description: string } | undefined
+  >;
+  const entry = translations[category.slug];
+  return {
+    name: entry?.name ?? category.name,
+    description: entry?.description ?? category.description ?? null,
+  };
+}
+
 // Elige singular o plural y rellena `{n}` de una vez.
 //   plural(t.card.videoCount, 1) → "1 video"
 export function plural(

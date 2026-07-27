@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useT, useLocalePath } from "@/components/I18nProvider";
+import { localizeCategory } from "@/lib/i18n";
 import type { Category, ResourceLanguage } from "@/lib/types";
 import type { ResourceSort } from "@/lib/catalog";
 
@@ -107,7 +108,7 @@ export function ExploreFilters({
             active={selected.includes(c.slug)}
             onClick={() => toggle(c.slug)}
           >
-            {c.name}
+            {localizeCategory(c, t).name}
           </Chip>
         ))}
       </div>

@@ -1,8 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LocaleLink } from "@/components/LocaleLink";
 import { useT } from "@/components/I18nProvider";
+
+// A partir de aquí la lista y la pantalla van en dos columnas (`lg`), que es
+// donde el cursor manda y no hace falta desplegar nada.
+const DESKTOP = "(min-width: 1024px)";
+
+// Aire entre la barra superior y el paso al que se desplaza.
+const SCROLL_GAP = 12;
+
+// El cursor solo manda en la disposición de dos columnas. Debajo de `lg` la
+// selección es por toque: si el cursor también contara, el desplazamiento suave
+// haría pasar otros pasos por debajo del puntero y le robarían la selección al
+// paso recién tocado a media animación.
+function isDesktop() {
+  return window.matchMedia(DESKTOP).matches;
+}
 
 // Cómo aportar un video, contado en cuatro pasos: a la izquierda la lista, a la
 // derecha la pantalla de ese paso. Al pasar el cursor por un paso (o al
@@ -18,6 +33,8 @@ import { useT } from "@/components/I18nProvider";
 export function HowToAddVideo({ categories }: { categories: string[] }) {
   const t = useT();
   const [active, setActive] = useState(0);
+  const items = useRef<(HTMLLIElement | null)[]>([]);
+  const panels = useRef<(HTMLDivElement | null)[]>([]);
 
   const steps = [
     { n: "01", title: t.landing.howToStep1Title, text: t.landing.howToStep1Text },
@@ -25,6 +42,34 @@ export function HowToAddVideo({ categories }: { categories: string[] }) {
     { n: "03", title: t.landing.howToStep3Title, text: t.landing.howToStep3Text },
     { n: "04", title: t.landing.howToStep4Title, text: t.landing.howToStep4Text },
   ];
+
+  // En móvil, al tocar un paso este sube hasta justo debajo de la barra, para
+  // que él y su pantalla ocupen la vista sin que haya que buscarlos.
+  //
+  // El desplazamiento se calcula en el clic, antes de que la animación mueva
+  // nada: si el paso que se cierra estaba por encima, al plegarse sube todo lo
+  // que hay debajo, así que se descuenta su alto a mano. Medir después no
+  // sirve: durante el medio segundo de transición la geometría está a medias.
+  function selectStep(index: number) {
+    const previous = active;
+    setActive(index);
+
+    // En escritorio la pantalla vive en la columna pegajosa: nada que mover.
+    if (window.matchMedia(DESKTOP).matches) return;
+
+    const item = items.current[index];
+    if (!item) return;
+
+    // Los cuatro paneles miden lo mismo, así que cualquiera sirve de medida.
+    // `offsetHeight` ignora los transforms y da el alto real aunque esté plegado.
+    const collapsing = previous < index ? (panels.current[previous]?.offsetHeight ?? 0) : 0;
+    const header = document.querySelector("header")?.offsetHeight ?? 0;
+    const top =
+      item.getBoundingClientRect().top + window.scrollY - header - collapsing - SCROLL_GAP;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: Math.max(top, 0), behavior: reduceMotion ? "auto" : "smooth" });
+  }
 
   return (
     <section className="mx-auto w-full max-w-[1500px] px-5 py-12 sm:px-8">
@@ -47,7 +92,13 @@ export function HowToAddVideo({ categories }: { categories: string[] }) {
             {steps.map((step, i) => {
               const on = i === active;
               return (
-                <li key={step.n} className="relative border-b border-border">
+                <li
+                  key={step.n}
+                  ref={(el) => {
+                    items.current[i] = el;
+                  }}
+                  className="relative border-b border-border"
+                >
                   {/* Marca de acento del paso activo */}
                   <span
                     aria-hidden="true"
@@ -57,9 +108,9 @@ export function HowToAddVideo({ categories }: { categories: string[] }) {
                   />
                   <button
                     type="button"
-                    onMouseEnter={() => setActive(i)}
-                    onFocus={() => setActive(i)}
-                    onClick={() => setActive(i)}
+                    onMouseEnter={() => isDesktop() && setActive(i)}
+                    onFocus={() => isDesktop() && setActive(i)}
+                    onClick={() => selectStep(i)}
                     aria-pressed={on}
                     className={`flex w-full items-start gap-4 py-6 pl-5 pr-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
                       on ? "bg-fill" : "hover:bg-fill"
@@ -88,14 +139,36 @@ export function HowToAddVideo({ categories }: { categories: string[] }) {
                     </span>
                   </button>
 
-                  {/* Móvil: la pantalla del paso activo, debajo de él */}
-                  {on && (
-                    <div aria-hidden="true" className="px-5 pb-6 lg:hidden">
-                      <div className="h-[23rem] w-full">
-                        <StepShot index={i} categories={categories} />
+                  {/* Móvil: la pantalla del paso, que se despliega debajo de él.
+                      Las cuatro se quedan montadas y se animan con `grid-rows`
+                      de 0fr a 1fr, que es la forma de llegar al alto natural
+                      del contenido: hacia `height: auto` no se puede animar, y
+                      montarla y desmontarla la hacía aparecer de golpe. */}
+                  <div
+                    aria-hidden="true"
+                    className={`grid overflow-hidden transition-[grid-template-rows] duration-500 ease-out motion-reduce:transition-none lg:hidden ${
+                      on ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
+                  >
+                    <div className="min-h-0">
+                      <div
+                        ref={(el) => {
+                          panels.current[i] = el;
+                        }}
+                        className={`px-5 pb-6 transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none ${
+                          on ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
+                        }`}
+                      >
+                        {/* Alto atado a la vista para que el paso y su pantalla
+                            llenen la pantalla del teléfono, con suelo para que
+                            la maqueta no se recorte y techo para que en
+                            pantallas muy altas no se estire de más. */}
+                        <div className="h-[clamp(21rem,58vh,30rem)] w-full">
+                          <StepShot index={i} categories={categories} />
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </li>
               );
             })}

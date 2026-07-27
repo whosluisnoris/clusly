@@ -90,6 +90,23 @@ export const es = {
     topicsTitle: "Explora por temática",
     seeAll: "Ver todo →",
     resourceCount: { one: "{n} recurso", other: "{n} recursos" },
+    howToEyebrow: "Aporta a la comunidad",
+    howToTitle: "Cómo agregar un video",
+    howToSubtitle:
+      "El catálogo lo llena la gente que aprende aquí. Si un video te sirvió, súbelo: son cuatro pasos y no llega al minuto.",
+    howToHint: "Pasa el cursor por cada paso para verlo.",
+    howToStep1Title: "Copia el enlace en YouTube",
+    howToStep1Text:
+      "Sirve un video suelto o una playlist completa. Con el enlace basta: el título, la miniatura y la duración los sacamos nosotros.",
+    howToStep2Title: "Pégalo en Clusly",
+    howToStep2Text:
+      "Abre «Aportar video» y pega el enlace. Si alguien ya lo subió te avisamos ahí mismo y te llevamos al que ya está.",
+    howToStep3Title: "Elige temáticas e idioma",
+    howToStep3Text:
+      "Marca las categorías donde encaja y en qué idioma está hablado. Es lo que hace que otra persona lo encuentre cuando le haga falta.",
+    howToStep4Title: "Publica y deja que la comunidad vote",
+    howToStep4Text:
+      "Con tu cuenta aparece al instante en el catálogo; sin ella queda pendiente de revisión. De ahí en adelante, los votos lo hacen subir.",
   },
 
   explore: {

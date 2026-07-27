@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_NAME } from "@/lib/constants";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { HowToAddVideo } from "@/components/HowToAddVideo";
 import {
   getDictionary,
   isLocale,
@@ -175,6 +176,11 @@ export default async function LandingPage({
           </div>
         </section>
       )}
+
+      {/* Cómo aportar un video: los pasos a la izquierda, la pantalla de cada
+          uno a la derecha. Las categorías reales alimentan la maqueta del paso
+          en el que se eligen. */}
+      <HowToAddVideo categories={categories.map((c) => c.name)} />
 
       <div className="flex-1" />
       <SiteFooter lang={uiLang} />

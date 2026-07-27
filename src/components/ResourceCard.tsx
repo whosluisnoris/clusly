@@ -7,7 +7,7 @@ import type { ResourceRow } from "@/lib/types";
 import type { CategoryTag } from "@/lib/catalog";
 import { formatDuration, timeAgo } from "@/lib/dates";
 import { useT } from "@/components/I18nProvider";
-import { plural } from "@/lib/i18n";
+import { plural, localizeCategory } from "@/lib/i18n";
 import { VoteControl } from "@/components/VoteControl";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
@@ -127,7 +127,7 @@ export function ResourceCard({
                     style={{ backgroundColor: c.color ?? "var(--accent)" }}
                     aria-hidden="true"
                   />
-                  {c.name}
+                  {localizeCategory(c, t).name}
                 </span>
               ))}
               {categories.length > 2 && (

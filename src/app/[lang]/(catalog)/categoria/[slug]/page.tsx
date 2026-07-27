@@ -10,7 +10,7 @@ import { getUserFavorites } from "@/lib/favorites";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { catColor } from "@/lib/color";
 import { CategoryIcon } from "@/components/CategoryIcon";
-import { getDictionary, isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
+import { getDictionary, isLocale, localizeCategory, DEFAULT_LOCALE } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +34,7 @@ export default async function CategoryPage({
     user ? getUserFavorites(user.id, resourceIds) : Promise.resolve(new Set<string>()),
   ]);
   const color = catColor(category.color);
+  const { name, description } = localizeCategory(category, t);
 
   return (
     <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-8 sm:px-8">
@@ -46,10 +47,10 @@ export default async function CategoryPage({
         </span>
         <div>
           <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            {category.name}
+            {name}
           </h1>
-          {category.description && (
-            <p className="mt-1 max-w-2xl text-sm text-muted">{category.description}</p>
+          {description && (
+            <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>
           )}
         </div>
       </div>

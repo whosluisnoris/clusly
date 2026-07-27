@@ -101,18 +101,13 @@ export function HowToAddVideo({ categories }: { categories: string[] }) {
             })}
           </ol>
 
-          <div className="mt-8 flex flex-wrap items-center gap-5">
+          <div className="mt-8">
             <LocaleLink
               href="/enviar"
-              className="brand-gradient rounded-full px-6 py-3 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95"
+              className="brand-gradient inline-block rounded-full px-6 py-3 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95"
             >
               {t.nav.submit}
             </LocaleLink>
-            {/* La pista solo tiene sentido donde hay cursor que pasar */}
-            <span className="hidden items-center gap-2 text-xs text-muted lg:inline-flex">
-              <PointerIcon />
-              {t.landing.howToHint}
-            </span>
           </div>
         </div>
 
@@ -380,15 +375,3 @@ function CopyIcon() {
   );
 }
 
-function PointerIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-3.5 w-3.5 shrink-0"
-      aria-hidden="true"
-    >
-      <path d="M5.5 2.5l13.2 7.6-5.9 1.4-2.4 5.6-4.9-14.6z" />
-    </svg>
-  );
-}

@@ -1,9 +1,14 @@
 "use client";
 
+import { useT } from "@/components/I18nProvider";
+import { localizeCategory } from "@/lib/i18n";
 import type { Category } from "@/lib/types";
 
 // Chips de categoría con selección múltiple, reutilizable en el admin para
 // asignar N categorías a un recurso.
+//
+// Los nombres salen traducidos al idioma activo. En el panel eso no cambia
+// nada: su layout monta el diccionario en español a propósito.
 export function CategoryMultiSelect({
   categories,
   selected,
@@ -13,6 +18,8 @@ export function CategoryMultiSelect({
   selected: string[];
   onChange: (ids: string[]) => void;
 }) {
+  const t = useT();
+
   if (categories.length === 0) {
     return (
       <p className="text-xs text-faint">
@@ -44,7 +51,7 @@ export function CategoryMultiSelect({
             }`}
           >
             {on && "✓ "}
-            {c.name}
+            {localizeCategory(c, t).name}
           </button>
         );
       })}

@@ -97,7 +97,6 @@ export const en: Dictionary = {
     howToTitle: "How to add a video",
     howToSubtitle:
       "The catalog is filled by the people learning here. If a video helped you, add it: four steps, under a minute.",
-    howToHint: "Hover each step to see it.",
     howToStep1Title: "Copy the link on YouTube",
     howToStep1Text:
       "A single video or a whole playlist. The link is all we need: title, thumbnail and duration come across on their own.",
@@ -110,6 +109,57 @@ export const en: Dictionary = {
     howToStep4Title: "Publish it and let the community vote",
     howToStep4Text:
       "Signed in, it lands in the catalog right away; without an account it waits for review. From there, votes push it up.",
+  },
+
+  categories: {
+    tecnologia: {
+      name: "Technology",
+      description: "Tech fundamentals and what's new",
+    },
+    programacion: {
+      name: "Programming",
+      description: "Languages, algorithms and good practices",
+    },
+    web: {
+      name: "Web",
+      description: "Frontend, backend and everything in the browser",
+    },
+    ia: {
+      name: "AI",
+      description: "Artificial intelligence and machine learning",
+    },
+    agentes: {
+      name: "Agents",
+      description: "Autonomous agents and LLM orchestration",
+    },
+    datos: {
+      name: "Data",
+      description: "Data engineering and analysis",
+    },
+    diseno: {
+      name: "Design",
+      description: "UI, UX and product design",
+    },
+    producto: {
+      name: "Product",
+      description: "Product management and strategy",
+    },
+    devops: {
+      name: "DevOps",
+      description: "Infrastructure, CI/CD and cloud",
+    },
+    ciberseguridad: {
+      name: "Cybersecurity",
+      description: "Offensive and defensive security",
+    },
+    movil: {
+      name: "Mobile",
+      description: "iOS, Android and cross-platform development",
+    },
+    carrera: {
+      name: "Career",
+      description: "Jobs, soft skills and professional growth",
+    },
   },
 
   explore: {

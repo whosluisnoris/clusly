@@ -225,6 +225,684 @@ h3,
   }
 }
 
+/* ── Ruta de ejemplo del hero, animada ──
+   CSS puro, en un ciclo de 9s: la ruta se completa video a video (la barra se
+   llena, "Siguiente" pasa a la fila siguiente, cada fila hecha recibe su ✓),
+   pausa y vuelve a empezar. Los tiempos (% del ciclo) salen de un mismo guion:
+   cada paso empieza en 0, 11, 28, 44 y 61 %, y a partir del 94 % se reinicia.
+   Sin animación (menos movimiento) queda el estado quieto del marcado: 2 de 4. */
+.route-next.i0 {
+  animation: route-next-0 9s infinite;
+}
+.route-row.i0 {
+  animation: route-row-0 9s infinite;
+}
+.route-play.i0 {
+  animation: route-play-0 9s infinite;
+}
+.route-check.i0 {
+  animation: route-check-0 9s infinite;
+}
+.route-text.i0 {
+  animation: route-text-0 9s infinite;
+}
+.route-next.i1 {
+  animation: route-next-1 9s infinite;
+}
+.route-row.i1 {
+  animation: route-row-1 9s infinite;
+}
+.route-play.i1 {
+  animation: route-play-1 9s infinite;
+}
+.route-check.i1 {
+  animation: route-check-1 9s infinite;
+}
+.route-text.i1 {
+  animation: route-text-1 9s infinite;
+}
+.route-next.i2 {
+  animation: route-next-2 9s infinite;
+}
+.route-row.i2 {
+  animation: route-row-2 9s infinite;
+}
+.route-play.i2 {
+  animation: route-play-2 9s infinite;
+}
+.route-check.i2 {
+  animation: route-check-2 9s infinite;
+}
+.route-text.i2 {
+  animation: route-text-2 9s infinite;
+}
+.route-next.i3 {
+  animation: route-next-3 9s infinite;
+}
+.route-row.i3 {
+  animation: route-row-3 9s infinite;
+}
+.route-play.i3 {
+  animation: route-play-3 9s infinite;
+}
+.route-check.i3 {
+  animation: route-check-3 9s infinite;
+}
+.route-text.i3 {
+  animation: route-text-3 9s infinite;
+}
+.route-bar {
+  transform-origin: left center;
+  animation: route-bar 9s infinite cubic-bezier(0.22, 1, 0.36, 1);
+}
+.route-label.l0 {
+  animation: route-label-0 9s infinite;
+}
+.route-label.l1 {
+  animation: route-label-1 9s infinite;
+}
+.route-label.l2 {
+  animation: route-label-2 9s infinite;
+}
+.route-label.l3 {
+  animation: route-label-3 9s infinite;
+}
+.route-label.l4 {
+  animation: route-label-4 9s infinite;
+}
+@keyframes route-next-0 {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  11% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  13% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  94% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes route-row-0 {
+  0% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  11% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  13% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  94% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  100% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+}
+@keyframes route-play-0 {
+  0% {
+    color: var(--accent);
+  }
+  11% {
+    color: var(--accent);
+  }
+  13% {
+    color: var(--faint);
+  }
+  94% {
+    color: var(--faint);
+  }
+  100% {
+    color: var(--accent);
+  }
+}
+@keyframes route-check-0 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  11% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  13% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  14.5% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes route-text-0 {
+  0% {
+    opacity: 1;
+  }
+  11% {
+    opacity: 1;
+  }
+  13% {
+    opacity: 0.55;
+  }
+  94% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes route-next-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  11% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  13% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  28% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes route-row-1 {
+  0% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  11% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  13% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  28% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  30% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+@keyframes route-play-1 {
+  0% {
+    color: var(--faint);
+  }
+  11% {
+    color: var(--faint);
+  }
+  13% {
+    color: var(--accent);
+  }
+  28% {
+    color: var(--accent);
+  }
+  30% {
+    color: var(--faint);
+  }
+  100% {
+    color: var(--faint);
+  }
+}
+@keyframes route-check-1 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  28% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  31.5% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes route-text-1 {
+  0% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.55;
+  }
+  94% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes route-next-2 {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  28% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  44% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  46% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes route-row-2 {
+  0% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  28% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  30% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  44% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  46% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+@keyframes route-play-2 {
+  0% {
+    color: var(--faint);
+  }
+  28% {
+    color: var(--faint);
+  }
+  30% {
+    color: var(--accent);
+  }
+  44% {
+    color: var(--accent);
+  }
+  46% {
+    color: var(--faint);
+  }
+  100% {
+    color: var(--faint);
+  }
+}
+@keyframes route-check-2 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  44% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  46% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  47.5% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes route-text-2 {
+  0% {
+    opacity: 1;
+  }
+  44% {
+    opacity: 1;
+  }
+  46% {
+    opacity: 0.55;
+  }
+  94% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes route-next-3 {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  44% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  46% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  61% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  63% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes route-row-3 {
+  0% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  44% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  46% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  61% {
+    background-color: var(--fill);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  63% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+@keyframes route-play-3 {
+  0% {
+    color: var(--faint);
+  }
+  44% {
+    color: var(--faint);
+  }
+  46% {
+    color: var(--accent);
+  }
+  61% {
+    color: var(--accent);
+  }
+  63% {
+    color: var(--faint);
+  }
+  100% {
+    color: var(--faint);
+  }
+}
+@keyframes route-check-3 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  61% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  63% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  64.5% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  94% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes route-text-3 {
+  0% {
+    opacity: 1;
+  }
+  61% {
+    opacity: 1;
+  }
+  63% {
+    opacity: 0.55;
+  }
+  94% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes route-bar {
+  0% {
+    transform: scaleX(0);
+  }
+  11% {
+    transform: scaleX(0);
+  }
+  15% {
+    transform: scaleX(0.25);
+  }
+  28% {
+    transform: scaleX(0.25);
+  }
+  32% {
+    transform: scaleX(0.5);
+  }
+  44% {
+    transform: scaleX(0.5);
+  }
+  48% {
+    transform: scaleX(0.75);
+  }
+  61% {
+    transform: scaleX(0.75);
+  }
+  65% {
+    transform: scaleX(1);
+  }
+  94% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+@keyframes route-label-0 {
+  0% {
+    opacity: 1;
+  }
+  11% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0;
+  }
+  94% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes route-label-1 {
+  0% {
+    opacity: 0;
+  }
+  11% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 1;
+  }
+  29% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes route-label-2 {
+  0% {
+    opacity: 0;
+  }
+  28% {
+    opacity: 0;
+  }
+  29% {
+    opacity: 1;
+  }
+  44% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes route-label-3 {
+  0% {
+    opacity: 0;
+  }
+  44% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  61% {
+    opacity: 1;
+  }
+  62% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes route-label-4 {
+  0% {
+    opacity: 0;
+  }
+  61% {
+    opacity: 0;
+  }
+  62% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-next,
+  .route-row,
+  .route-play,
+  .route-check,
+  .route-text,
+  .route-bar,
+  .route-label {
+    animation: none;
+  }
+}
+
 /* ── Barra de scroll uniforme para las zonas con scroll propio ── */
 .custom-scroll::-webkit-scrollbar {
   width: 10px;

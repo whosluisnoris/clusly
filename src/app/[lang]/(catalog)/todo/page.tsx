@@ -10,6 +10,7 @@ import { getUserFavorites } from "@/lib/favorites";
 import { ResourceGrid } from "@/components/ResourceGrid";
 import { ExploreFilters } from "@/components/ExploreFilters";
 import { getDictionary, isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
+import { Page, PageHeader } from "@/components/ui";
 import type { ResourceLanguage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -55,19 +56,8 @@ export default async function TodoPage({
   const filtering = selectedSlugs.length > 0 || language !== null;
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-8 sm:px-8">
-      <div className="mb-8 flex items-start gap-4">
-        <span
-          className="brand-gradient mt-1.5 h-10 w-1.5 shrink-0 rounded-full"
-          aria-hidden="true"
-        />
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            {t.explore.title}
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-muted">{t.explore.subtitle}</p>
-        </div>
-      </div>
+    <Page>
+      <PageHeader title={t.explore.title} description={t.explore.subtitle} />
 
       <ExploreFilters
         categories={categories}
@@ -85,6 +75,6 @@ export default async function TodoPage({
           empty={filtering ? t.explore.emptyFiltered : t.explore.empty}
         />
       </ExploreFilters>
-    </main>
+    </Page>
   );
 }

@@ -4,6 +4,7 @@ import type { LiveStream } from "@/lib/invidious";
 import { StatusBadge } from "./StatusBadge";
 import { formatDate, formatDuration, timeAgo } from "@/lib/dates";
 import { trackEvent } from "@/lib/analytics";
+import { ButtonLink } from "@/components/ui";
 
 interface PlayerPanelProps {
   stream: LiveStream;
@@ -22,7 +23,7 @@ export function PlayerPanel({ stream, autoplay, dateVerb = "Transmitido" }: Play
 
   return (
     <section aria-label="Reproductor">
-      <div className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-2xl ring-1 ring-border">
+      <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-2xl ring-1 ring-border">
         <iframe
           key={embedSrc} /* re-monta el iframe al cambiar de video */
           src={embedSrc}
@@ -34,7 +35,7 @@ export function PlayerPanel({ stream, autoplay, dateVerb = "Transmitido" }: Play
       </div>
 
       <div className="mt-5 flex flex-col gap-3">
-        <h1 className="text-lg font-bold leading-snug text-foreground sm:text-xl">
+        <h1 className="text-xl font-extrabold leading-snug tracking-tight text-foreground sm:text-2xl">
           {stream.title}
         </h1>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -52,15 +53,15 @@ export function PlayerPanel({ stream, autoplay, dateVerb = "Transmitido" }: Play
               )
             )}
           </div>
-          <a
+          <ButtonLink
             href={stream.watchUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            external
+            variant="secondary"
+            size="sm"
             onClick={() => trackEvent(stream.videoId, "open_youtube")}
-            className="rounded-lg border border-accent/30 px-4 py-2 text-sm font-semibold text-accent-ink transition hover:bg-accent/10 active:scale-95"
           >
             Ver en YouTube ↗
-          </a>
+          </ButtonLink>
         </div>
       </div>
     </section>

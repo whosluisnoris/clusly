@@ -64,7 +64,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <LocaleLink
       href={href}
-      className="rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:bg-fill hover:text-foreground"
+      className="rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:bg-fill hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       {children}
     </LocaleLink>

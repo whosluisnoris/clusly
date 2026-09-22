@@ -16,6 +16,19 @@ import {
 import { formatDate } from "@/lib/dates";
 import { useT } from "@/components/I18nProvider";
 import { fmt } from "@/lib/i18n";
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Field,
+  Input,
+  MetaLine,
+  Textarea,
+  buttonClasses,
+  textLinkClasses,
+} from "@/components/ui";
 
 // Tarjeta del perfil propio: muestra los datos y, al pulsar "Editar perfil",
 // se convierte en el formulario. Guarda con PATCH /api/profile y refresca para
@@ -92,53 +105,39 @@ export function ProfileCard({
     }
   }
 
-  const initial = displayName.charAt(0).toUpperCase();
-
   if (!editing) {
     return (
-      <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span
-              className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-accent/15 text-2xl font-black text-accent-ink ring-1 ring-accent/30"
-              aria-hidden="true"
-            >
-              {initial}
-            </span>
+      <Card as="section" padding="lg">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+            <Avatar name={profile.displayName} size="lg" />
             <div className="min-w-0">
-              <h1 className="truncate text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+              <h1 className="truncate text-[1.75rem] font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
                 {profile.displayName}
               </h1>
               <p className="truncate text-sm text-muted">{email}</p>
-              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-faint">
-                {roleLabel && (
-                  <span className="rounded-full bg-accent/15 px-2 py-0.5 font-bold uppercase tracking-wide text-accent-ink">
-                    {roleLabel}
-                  </span>
-                )}
-                {profile.location && <span>📍 {profile.location}</span>}
-                {profile.createdAt && (
-                  <span>
-                    {fmt(t.profile.memberSince, {
-                      date: formatDate(profile.createdAt) ?? "",
-                    })}
-                  </span>
-                )}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {roleLabel && <Badge tone="accent">{roleLabel}</Badge>}
+                <MetaLine
+                  items={[
+                    profile.location && `📍 ${profile.location}`,
+                    profile.createdAt &&
+                      fmt(t.profile.memberSince, {
+                        date: formatDate(profile.createdAt) ?? "",
+                      }),
+                  ]}
+                />
               </div>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="rounded-full bg-fill px-5 py-2.5 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong"
-          >
+          <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
             {t.profile.editButton}
-          </button>
+          </Button>
         </div>
 
         <p
-          className={`mt-6 whitespace-pre-wrap break-words text-sm ${
+          className={`mt-6 whitespace-pre-wrap break-words text-[15px] leading-relaxed ${
             profile.bio ? "text-foreground" : "text-faint"
           }`}
         >
@@ -153,7 +152,7 @@ export function ProfileCard({
                   href={l.url}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong hover:text-accent-ink"
+                  className={buttonClasses({ variant: "soft", size: "sm", className: "h-8 px-3 text-xs" })}
                 >
                   🔗 {l.label || hostOf(l.url)}
                 </a>
@@ -161,134 +160,108 @@ export function ProfileCard({
             ))}
           </ul>
         )}
-      </section>
+      </Card>
     );
   }
 
   return (
-    <form
-      onSubmit={save}
-      className="flex flex-col gap-5 rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-8"
-    >
-      <h2 className="text-lg font-bold text-foreground">{t.profile.editTitle}</h2>
+    <Card as="form" padding="lg" onSubmit={save} className="flex flex-col gap-6">
+      <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+        {t.profile.editTitle}
+      </h2>
 
-      <label className="flex flex-col gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          {t.profile.nameLabel}
-        </span>
-        <input
+      <Field label={t.profile.nameLabel} hint={t.profile.nameHint}>
+        <Input
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           maxLength={MAX_NAME}
           required
-          className="rounded-lg bg-background px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
-        <span className="text-xs text-faint">{t.profile.nameHint}</span>
-      </label>
+      </Field>
 
-      <label className="flex flex-col gap-2">
-        <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted">
-          {t.profile.bioLabel}
-          <span className="tabular-nums font-normal normal-case text-faint">
-            {bio.length}/{MAX_BIO}
-          </span>
-        </span>
-        <textarea
+      <Field label={t.profile.bioLabel} counter={`${bio.length}/${MAX_BIO}`}>
+        <Textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           maxLength={MAX_BIO}
-          rows={4}
           placeholder={t.profile.bioPlaceholder}
-          className="resize-y rounded-lg bg-background px-4 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
-      </label>
+      </Field>
 
-      <label className="flex flex-col gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          {t.profile.locationLabel}
-        </span>
-        <input
+      <Field label={t.profile.locationLabel}>
+        <Input
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           maxLength={MAX_LOCATION}
           placeholder={t.profile.locationPlaceholder}
-          className="rounded-lg bg-background px-4 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
         />
-      </label>
+      </Field>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          {t.profile.linksLabel}{" "}
-          <span className="font-normal normal-case text-faint">
-            {fmt(t.profile.linksHint, { n: MAX_LINKS })}
-          </span>
-        </span>
+      <Field
+        group
+        label={t.profile.linksLabel}
+        counter={fmt(t.profile.linksHint, { n: MAX_LINKS })}
+      >
+        <div className="flex flex-col gap-2.5">
+          {links.length === 0 && (
+            <p className="text-xs text-faint">
+              {t.profile.linksEmpty}
+            </p>
+          )}
 
-        {links.length === 0 && (
-          <p className="text-xs text-faint">
-            {t.profile.linksEmpty}
-          </p>
-        )}
+          {links.map((link, i) => (
+            <div key={i} className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                type="text"
+                value={link.label}
+                onChange={(e) => updateLink(i, { label: e.target.value })}
+                maxLength={MAX_LINK_LABEL}
+                placeholder={t.profile.linkName}
+                className="sm:w-44"
+              />
+              <Input
+                type="url"
+                value={link.url}
+                onChange={(e) => updateLink(i, { url: e.target.value })}
+                placeholder="https://…"
+                className="flex-1"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLinks((prev) => prev.filter((_, j) => j !== i))}
+                aria-label={`${t.profile.linkRemove} ${i + 1}`}
+                className="self-end sm:h-11 sm:self-auto"
+              >
+                {t.profile.linkRemove}
+              </Button>
+            </div>
+          ))}
 
-        {links.map((link, i) => (
-          <div key={i} className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="text"
-              value={link.label}
-              onChange={(e) => updateLink(i, { label: e.target.value })}
-              maxLength={MAX_LINK_LABEL}
-              placeholder={t.profile.linkName}
-              className="rounded-lg bg-background px-3 py-2 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50 sm:w-44"
-            />
-            <input
-              type="url"
-              value={link.url}
-              onChange={(e) => updateLink(i, { url: e.target.value })}
-              placeholder="https://…"
-              className="flex-1 rounded-lg bg-background px-3 py-2 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-            />
+          {links.length < MAX_LINKS && (
             <button
               type="button"
-              onClick={() => setLinks((prev) => prev.filter((_, j) => j !== i))}
-              aria-label={`Quitar enlace ${i + 1}`}
-              className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs text-muted transition hover:bg-fill hover:text-foreground"
+              onClick={() => setLinks((prev) => [...prev, { label: "", url: "" }])}
+              className={textLinkClasses("accent", "self-start text-sm")}
             >
-              {t.profile.linkRemove}
+              {t.profile.linkAdd}
             </button>
-          </div>
-        ))}
+          )}
+        </div>
+      </Field>
 
-        {links.length < MAX_LINKS && (
-          <button
-            type="button"
-            onClick={() => setLinks((prev) => [...prev, { label: "", url: "" }])}
-            className="self-start text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-          >
-            {t.profile.linkAdd}
-          </button>
-        )}
-      </div>
+      {error && <Alert tone="error">{error}</Alert>}
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="brand-gradient rounded-full px-6 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:opacity-60"
-        >
-          {saving ? t.common.saving : t.profile.saveChanges}
-        </button>
-        <button
-          type="button"
-          onClick={cancel}
-          className="rounded-full bg-fill px-6 py-2.5 text-sm font-semibold text-muted ring-1 ring-border transition hover:bg-fill-strong hover:text-foreground"
-        >
+      <div className="flex flex-col gap-2.5 border-t border-border pt-6 sm:flex-row">
+        <Button type="submit" loading={saving} loadingText={t.common.saving}>
+          {t.profile.saveChanges}
+        </Button>
+        <Button variant="secondary" onClick={cancel}>
           {t.common.cancel}
-        </button>
+        </Button>
       </div>
-    </form>
+    </Card>
   );
 }

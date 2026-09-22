@@ -1,4 +1,3 @@
-import { LocaleLink } from "@/components/LocaleLink";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -6,6 +5,7 @@ import { getPublishedPost, readingMinutes } from "@/lib/blog";
 import { Markdown } from "@/lib/markdown";
 import { formatDate } from "@/lib/dates";
 import { getDictionary, isLocale, fmt, DEFAULT_LOCALE } from "@/lib/i18n";
+import { BackLink, ButtonLink, Card, MetaLine, Page } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -61,36 +61,30 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-8">
-      <LocaleLink
-        href="/blog"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent-ink"
-      >
+    <Page size="narrow">
+      <BackLink href="/blog" className="mb-5">
         {t.blog.back}
-      </LocaleLink>
+      </BackLink>
 
       <article>
-        <header className="border-b border-border pb-6">
-          <h1 className="text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl">
+        <header className="border-b border-border pb-8">
+          <h1 className="text-[2rem] font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-[2.6rem]">
             {post.title}
           </h1>
-          <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-faint">
-            {post.authorName && (
-              <>
+          <MetaLine
+            className="mt-4 text-[13px]"
+            items={[
+              post.authorName && (
                 <span className="font-semibold text-muted">{post.authorName}</span>
-                <span>·</span>
-              </>
-            )}
-            {post.publishedAt && (
-              <>
+              ),
+              post.publishedAt && (
                 <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-                <span>·</span>
-              </>
-            )}
-            <span>{fmt(t.blog.readingTime, { n: readingMinutes(post.content) })}</span>
-          </p>
+              ),
+              fmt(t.blog.readingTime, { n: readingMinutes(post.content) }),
+            ]}
+          />
           {post.excerpt && (
-            <p className="mt-4 text-base leading-relaxed text-muted">{post.excerpt}</p>
+            <p className="mt-5 text-[17px] leading-relaxed text-muted">{post.excerpt}</p>
           )}
           {post.coverUrl && (
             <div className="relative mt-6 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-elevated ring-1 ring-border">
@@ -111,15 +105,13 @@ export default async function BlogPostPage({
         </div>
       </article>
 
-      <div className="mt-12 rounded-2xl bg-surface p-6 text-center ring-1 ring-border">
-        <p className="text-sm text-muted">{t.blog.ctaTitle}</p>
-        <LocaleLink
-          href="/enviar"
-          className="brand-gradient mt-3 inline-block rounded-full px-5 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95"
-        >
-          {t.blog.ctaButton}
-        </LocaleLink>
-      </div>
-    </main>
+      <Card
+        padding="lg"
+        className="mt-14 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <p className="font-display text-lg font-bold text-foreground">{t.blog.ctaTitle}</p>
+        <ButtonLink href="/enviar">{t.blog.ctaButton}</ButtonLink>
+      </Card>
+    </Page>
   );
 }

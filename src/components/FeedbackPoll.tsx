@@ -313,7 +313,7 @@ export function FeedbackPoll({
         )}
 
         {error && (
-          <p className="mt-2 text-xs text-red-400">
+          <p className="mt-2 text-xs text-danger-ink">
             {t.poll.error}
           </p>
         )}

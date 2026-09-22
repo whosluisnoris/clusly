@@ -8,13 +8,15 @@ import { getCurrentUser } from "@/lib/auth";
 import { getUserVotes } from "@/lib/votes";
 import { getUserFavorites } from "@/lib/favorites";
 import { ResourceGrid } from "@/components/ResourceGrid";
-import { catColor } from "@/lib/color";
+import { catColor, topicColor } from "@/lib/color";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { getDictionary, isLocale, localizeCategory, DEFAULT_LOCALE } from "@/lib/i18n";
+import { Page, PageHeader } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
-// Grid de recursos de una categoría, con su ícono y el acento del tema.
+// Grid de recursos de una categoría. La cabecera lleva el ícono en el color de
+// la temática, igual que su tarjeta en la landing.
 export default async function CategoryPage({
   params,
 }: {
@@ -40,23 +42,14 @@ export default async function CategoryPage({
   const { name, description } = localizeCategory(category, t);
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-8 sm:px-8">
-      <div className="mb-8 flex items-center gap-4">
-        <span
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-on-complement"
-          style={{ backgroundColor: "var(--complement)" }}
-        >
-          <CategoryIcon slug={slug} className="h-6 w-6" />
-        </span>
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            {name}
-          </h1>
-          {description && (
-            <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>
-          )}
-        </div>
-      </div>
+    <Page>
+      <PageHeader
+        title={name}
+        description={description}
+        icon={<CategoryIcon slug={slug} />}
+        iconColor={topicColor(slug)}
+        back={{ href: "/todo", label: t.nav.explore }}
+      />
       <ResourceGrid
         resources={resources}
         from={slug}
@@ -67,6 +60,6 @@ export default async function CategoryPage({
         canVote={!!user}
         empty={t.category.empty}
       />
-    </main>
+    </Page>
   );
 }

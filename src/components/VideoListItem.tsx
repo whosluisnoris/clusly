@@ -45,7 +45,7 @@ export function VideoListItem({ stream, active, onSelect, badge }: VideoListItem
           <span
             className={`absolute bottom-1 right-1 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
               badge === "EN VIVO"
-                ? "bg-red-600 text-foreground"
+                ? "bg-danger text-white"
                 : "bg-black/80 text-accent-ink"
             }`}
           >

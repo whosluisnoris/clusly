@@ -149,13 +149,13 @@ export function Markdown({ children }: { children: string }) {
       const content = renderInline(text, `h${key}`);
       if (hashes.length === 1) {
         blocks.push(
-          <h2 key={key++} className="mt-10 text-2xl font-black text-foreground">
+          <h2 key={key++} className="mt-10 text-2xl font-extrabold tracking-tight text-foreground">
             {content}
           </h2>
         );
       } else if (hashes.length === 2) {
         blocks.push(
-          <h3 key={key++} className="mt-8 text-xl font-bold text-foreground">
+          <h3 key={key++} className="mt-8 text-xl font-extrabold tracking-tight text-foreground">
             {content}
           </h3>
         );

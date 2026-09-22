@@ -3,6 +3,7 @@
 import { useT } from "@/components/I18nProvider";
 import { localizeCategory } from "@/lib/i18n";
 import type { Category } from "@/lib/types";
+import { Chip } from "@/components/ui";
 
 // Chips de categoría con selección múltiple, reutilizable en el admin para
 // asignar N categorías a un recurso.
@@ -39,20 +40,10 @@ export function CategoryMultiSelect({
       {categories.map((c) => {
         const on = selected.includes(c.id);
         return (
-          <button
-            type="button"
-            key={c.id}
-            onClick={() => toggle(c.id)}
-            aria-pressed={on}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition active:scale-95 ${
-              on
-                ? "bg-accent text-on-accent"
-                : "bg-fill text-muted ring-1 ring-border hover:bg-fill-strong"
-            }`}
-          >
-            {on && "✓ "}
+          <Chip key={c.id} size="sm" pressed={on} onClick={() => toggle(c.id)}>
+            {on && <span aria-hidden="true">✓</span>}
             {localizeCategory(c, t).name}
-          </button>
+          </Chip>
         );
       })}
     </div>

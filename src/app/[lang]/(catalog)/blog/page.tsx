@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getPublishedPosts, readingMinutes } from "@/lib/blog";
 import { formatDate, timeAgo } from "@/lib/dates";
 import { getDictionary, isLocale, fmt, DEFAULT_LOCALE } from "@/lib/i18n";
+import { EmptyState, MetaLine, Page, PageHeader, cardClasses } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -28,31 +29,22 @@ export default async function BlogPage({
   const posts = await getPublishedPosts();
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-8">
-      <div className="mb-8 flex items-start gap-4">
-        <span
-          className="brand-gradient mt-1.5 h-10 w-1.5 shrink-0 rounded-full"
-          aria-hidden="true"
-        />
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            {t.blog.title}
-          </h1>
-          <p className="mt-1.5 text-sm text-muted">{t.blog.subtitle}</p>
-        </div>
-      </div>
+    <Page size="content">
+      <PageHeader title={t.blog.title} description={t.blog.subtitle} />
 
       {posts.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-10 text-center text-sm text-muted ring-1 ring-border">
-          {t.blog.empty}
-        </p>
+        <EmptyState description={t.blog.empty} />
       ) : (
         <ul className="flex flex-col gap-4">
           {posts.map((post) => (
             <li key={post.id}>
               <LocaleLink
                 href={`/blog/${post.slug}`}
-                className="block overflow-hidden rounded-2xl bg-surface ring-1 ring-border transition hover:ring-2 hover:ring-accent/40"
+                className={cardClasses({
+                  interactive: true,
+                  padding: "none",
+                  className: "group block overflow-hidden",
+                })}
               >
                 {post.coverUrl && (
                   <div className="relative aspect-[21/9] w-full bg-elevated">
@@ -61,40 +53,39 @@ export default async function BlogPage({
                       alt=""
                       fill
                       sizes="(max-width: 768px) 100vw, 768px"
-                      className="object-cover"
+                      className="object-cover transition duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
                     />
                   </div>
                 )}
-                <div className="p-6">
-                <h2 className="text-xl font-black leading-snug text-foreground">
-                  {post.title}
-                </h2>
-                {post.excerpt && (
-                  <p className="mt-2 line-clamp-3 text-sm text-muted">{post.excerpt}</p>
-                )}
-                <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-faint">
-                  {post.authorName && (
-                    <>
-                      <span className="font-semibold text-muted">{post.authorName}</span>
-                      <span>·</span>
-                    </>
+                <div className="p-5 sm:p-6">
+                  <h2 className="text-xl font-extrabold leading-snug tracking-tight text-foreground sm:text-2xl">
+                    {post.title}
+                  </h2>
+                  {post.excerpt && (
+                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted sm:text-[15px]">
+                      {post.excerpt}
+                    </p>
                   )}
-                  {post.publishedAt && (
-                    <>
-                      <time dateTime={post.publishedAt}>
-                        {timeAgo(post.publishedAt) ?? formatDate(post.publishedAt)}
-                      </time>
-                      <span>·</span>
-                    </>
-                  )}
-                  <span>{fmt(t.blog.readingTime, { n: readingMinutes(post.content) })}</span>
-                </p>
+                  <MetaLine
+                    className="mt-4"
+                    items={[
+                      post.authorName && (
+                        <span className="font-semibold text-muted">{post.authorName}</span>
+                      ),
+                      post.publishedAt && (
+                        <time dateTime={post.publishedAt}>
+                          {timeAgo(post.publishedAt) ?? formatDate(post.publishedAt)}
+                        </time>
+                      ),
+                      fmt(t.blog.readingTime, { n: readingMinutes(post.content) }),
+                    ]}
+                  />
                 </div>
               </LocaleLink>
             </li>
           ))}
         </ul>
       )}
-    </main>
+    </Page>
   );
 }

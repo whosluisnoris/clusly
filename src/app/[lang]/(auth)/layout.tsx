@@ -1,5 +1,6 @@
 import { SiteShell } from "@/components/SiteShell";
 import { isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
+import { Card } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +16,10 @@ export default async function AuthLayout({
   const { lang } = await params;
   return (
     <SiteShell lang={isLocale(lang) ? lang : DEFAULT_LOCALE}>
-      <main className="flex flex-1 items-center justify-center px-5 py-10">
-        <div className="glass w-full max-w-md rounded-2xl p-7 backdrop-blur-md sm:p-9">
+      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8 sm:py-16">
+        <Card padding="lg" className="w-full max-w-md">
           {children}
-        </div>
+        </Card>
       </main>
     </SiteShell>
   );

@@ -6,6 +6,7 @@ import { VideoListItem } from "@/components/VideoListItem";
 import { trackEvent } from "@/lib/analytics";
 import type { Playable } from "@/lib/types";
 import { useT } from "@/components/I18nProvider";
+import { Card, SectionHeader } from "@/components/ui";
 
 // Detalle de un recurso. Para un video suelto, solo el reproductor. Para una
 // playlist, reproductor + lista de episodios (mismo layout que Platzi Lives),
@@ -53,10 +54,20 @@ export function ResourceDetail({
           dateVerb={t.resource.publishedVerb}
         />
       </div>
-      <aside className="glass backdrop-blur-md custom-scroll flex max-h-[75vh] flex-col gap-3 rounded-2xl p-4 sm:p-5 lg:overflow-y-auto">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
-          {t.resource.episodes} <span className="text-faint">({episodes.length})</span>
-        </h2>
+      <Card
+        as="aside"
+        variant="glass"
+        padding="none"
+        className="custom-scroll flex max-h-[75vh] flex-col gap-3 overflow-y-auto p-4 sm:p-5"
+      >
+        <SectionHeader
+          size="sm"
+          title={
+            <>
+              {t.resource.episodes} <span className="text-faint">({episodes.length})</span>
+            </>
+          }
+        />
         {episodes.map((ep) => (
           <VideoListItem
             key={ep.videoId}
@@ -65,7 +76,7 @@ export function ResourceDetail({
             onSelect={select}
           />
         ))}
-      </aside>
+      </Card>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { LocaleLink } from "@/components/LocaleLink";
 import { useT } from "@/components/I18nProvider";
 import { fmt } from "@/lib/i18n";
+import { Alert, Button, Field, IconTile, Input, PageHeader, TextLink } from "@/components/ui";
 
 type Mode = "login" | "signup";
 
@@ -74,72 +74,68 @@ export function AuthForm({
 
   if (sent) {
     return (
-      <div className="text-center">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-2xl">
-          ✉️
-        </div>
-        <h1 className="font-display text-2xl font-black tracking-tight text-foreground">
+      <div className="flex flex-col items-center text-center">
+        <IconTile size="lg" className="mb-5">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3 7 9 6 9-6" />
+          </svg>
+        </IconTile>
+        <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
           {t.auth.checkEmailTitle}
         </h1>
-        <p className="mx-auto mt-3 max-w-sm text-sm text-muted">
+        <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
           {fmt(t.auth.checkEmailBody, { email })}
         </p>
-        <LocaleLink
-          href="/entrar"
-          className="mt-6 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-        >
+        <TextLink href="/entrar" className="mt-6 text-sm">
           {t.auth.backToSignIn}
-        </LocaleLink>
+        </TextLink>
       </div>
     );
   }
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-black tracking-tight text-foreground">
-        {isSignup ? t.auth.signUpTitle : t.auth.signInTitle}
-      </h1>
-      <p className="mt-2 text-sm text-muted">
-        {isSignup ? t.auth.signUpSubtitle : t.auth.signInSubtitle}
-      </p>
+      <PageHeader
+        size="md"
+        className="mb-7"
+        title={isSignup ? t.auth.signUpTitle : t.auth.signInTitle}
+        description={isSignup ? t.auth.signUpSubtitle : t.auth.signInSubtitle}
+      />
 
-      <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {isSignup && (
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {t.auth.nameLabel}
-            </span>
-            <input
+          <Field label={t.auth.nameLabel}>
+            <Input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder={t.auth.namePlaceholder}
               autoComplete="name"
-              className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
             />
-          </label>
+          </Field>
         )}
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t.auth.emailLabel}
-          </span>
-          <input
+        <Field label={t.auth.emailLabel}>
+          <Input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t.auth.emailPlaceholder}
             autoComplete="email"
-            className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
-        </label>
+        </Field>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t.auth.passwordLabel}
-          </span>
-          <input
+        <Field label={t.auth.passwordLabel}>
+          <Input
             type="password"
             required
             value={password}
@@ -151,47 +147,21 @@ export function AuthForm({
             }
             autoComplete={isSignup ? "new-password" : "current-password"}
             minLength={isSignup ? 8 : undefined}
-            className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
-        </label>
+        </Field>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <Alert tone="error">{error}</Alert>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="brand-gradient mt-1 rounded-full px-6 py-3 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading
-            ? t.auth.submitting
-            : isSignup
-              ? t.auth.submitSignUp
-              : t.auth.submitSignIn}
-        </button>
+        <Button type="submit" block loading={loading} loadingText={t.auth.submitting}>
+          {isSignup ? t.auth.submitSignUp : t.auth.submitSignIn}
+        </Button>
       </form>
 
       <p className="mt-6 text-sm text-muted">
-        {isSignup ? (
-          <>
-            {t.auth.haveAccount}{" "}
-            <LocaleLink
-              href="/entrar"
-              className="font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-            >
-              {t.auth.haveAccountLink}
-            </LocaleLink>
-          </>
-        ) : (
-          <>
-            {t.auth.noAccount}{" "}
-            <LocaleLink
-              href="/registro"
-              className="font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-            >
-              {t.auth.noAccountLink}
-            </LocaleLink>
-          </>
-        )}
+        {isSignup ? t.auth.haveAccount : t.auth.noAccount}{" "}
+        <TextLink href={isSignup ? "/entrar" : "/registro"}>
+          {isSignup ? t.auth.haveAccountLink : t.auth.noAccountLink}
+        </TextLink>
       </p>
     </div>
   );

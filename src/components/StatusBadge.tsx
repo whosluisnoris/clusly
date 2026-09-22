@@ -1,8 +1,10 @@
+import { Badge } from "@/components/ui";
+
+// Insignia "EN VIVO" del reproductor (rojo, la convención universal).
 export function StatusBadge() {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-foreground shadow">
-      <span className="h-2 w-2 animate-pulse rounded-full bg-white/80" />
+    <Badge tone="live" size="md" dot="pulse">
       En vivo
-    </span>
+    </Badge>
   );
 }

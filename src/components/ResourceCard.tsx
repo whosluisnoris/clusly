@@ -10,6 +10,7 @@ import { useT } from "@/components/I18nProvider";
 import { plural, localizeCategory } from "@/lib/i18n";
 import { VoteControl } from "@/components/VoteControl";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { topicColor } from "@/lib/color";
 
 // Tarjeta del catálogo (grid). El enlace envuelve la miniatura y el título; el
 // control de voto y el corazón de guardar viven fuera de él para no anidar
@@ -53,7 +54,7 @@ export function ResourceCard({
   return (
     <div
       style={{ ["--line" as string]: line }}
-      className="group relative flex flex-col overflow-hidden rounded-xl bg-surface ring-1 ring-border transition hover:ring-2 hover:ring-[var(--line)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-border transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:ring-2 hover:ring-[var(--line)] motion-reduce:hover:translate-y-0"
     >
       {/* Marca de color de la categoría en el borde superior */}
       <span
@@ -109,7 +110,7 @@ export function ResourceCard({
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-3.5 pb-2">
-          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+          <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-foreground">
             {resource.title}
           </h3>
           {resource.channel_title && (
@@ -124,7 +125,7 @@ export function ResourceCard({
                 >
                   <span
                     className="h-1.5 w-1.5 rounded-full"
-                    style={{ backgroundColor: c.color ?? "var(--accent)" }}
+                    style={{ backgroundColor: topicColor(c.slug) }}
                     aria-hidden="true"
                   />
                   {localizeCategory(c, t).name}

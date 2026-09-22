@@ -51,23 +51,24 @@ export default async function ResourcePage({
   const t = getDictionary(isLocale(lang) ? lang : DEFAULT_LOCALE);
   const { from } = await searchParams;
 
-  const resource = await getResourceByYoutubeId(youtubeId);
+  // Lo que no depende del recurso (sesión y enlace de volver) se pide a la vez
+  // que el recurso; antes todo iba en fila y cada consulta sumaba su espera.
+  const [resource, back, user] = await Promise.all([
+    getResourceByYoutubeId(youtubeId),
+    backTarget(from, t),
+    getCurrentUser(),
+  ]);
   if (!resource) notFound();
 
-  let episodes: Playable[] | null = null;
-  if (resource.kind === "playlist") {
-    const items = await getPlaylistItems(resource.id);
-    episodes = items.map((it) => playlistItemToPlayable(it, resource.channel_title));
-  }
+  const [items, userVote, saved] = await Promise.all([
+    resource.kind === "playlist" ? getPlaylistItems(resource.id) : Promise.resolve(null),
+    user ? getUserVote(user.id, resource.id) : Promise.resolve(0),
+    user ? isFavorite(user.id, resource.id) : Promise.resolve(false),
+  ]);
+  const episodes: Playable[] | null = items
+    ? items.map((it) => playlistItemToPlayable(it, resource.channel_title))
+    : null;
   const main = resourceToPlayable(resource);
-  const back = await backTarget(from, t);
-  const user = await getCurrentUser();
-  const [userVote, saved] = user
-    ? await Promise.all([
-        getUserVote(user.id, resource.id),
-        isFavorite(user.id, resource.id),
-      ])
-    : [0, false];
 
   return (
     <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 sm:px-8">

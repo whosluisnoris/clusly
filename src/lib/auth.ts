@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Roles de la plataforma. `owner` y `admin` son "staff" (acceden al panel);
@@ -20,7 +21,12 @@ export function isStaff(role: Role | null | undefined): boolean {
 // Usuario de la sesión actual (o null). Se lee desde Server Components, layouts y
 // Route Handlers. El nombre visible sale de los metadatos del usuario (fijados en
 // el registro); el rol se lee de `profiles` (lectura pública por RLS).
-export async function getCurrentUser(): Promise<SessionUser | null> {
+//
+// Va envuelto en `cache` de React: el layout (barra de navegación) y la página
+// lo piden en la misma request, y sin esto cada uno hacía su propia llamada a
+// Supabase Auth + su consulta a `profiles`. Así se resuelve una sola vez por
+// request (fuera de un render, p. ej. en un Route Handler, no memoriza nada).
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -39,4 +45,4 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   const role = ((profile?.role as Role | undefined) ?? "user") satisfies Role;
 
   return { id: user.id, email: user.email, displayName, role };
-}
+});

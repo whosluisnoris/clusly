@@ -1,8 +1,5 @@
 import { LocaleLink } from "@/components/LocaleLink";
 import { getActiveCategories, getCategoryResourceCounts } from "@/lib/catalog";
-import { getCurrentUser } from "@/lib/auth";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { HowToAddVideo } from "@/components/HowToAddVideo";
 import { RoutePreview } from "@/components/RoutePreview";
@@ -16,8 +13,9 @@ import {
   DEFAULT_LOCALE,
 } from "@/lib/i18n";
 
-export const dynamic = "force-dynamic";
-
+// La barra y el pie vienen del layout del grupo (home), igual que en el
+// catálogo: así Next puede prefetchearlos y mostrar el esqueleto de
+// `loading.tsx` al volver al inicio desde otra página.
 export default async function LandingPage({
   params,
 }: {
@@ -27,10 +25,9 @@ export default async function LandingPage({
   const uiLang = isLocale(lang) ? lang : DEFAULT_LOCALE;
   const t = getDictionary(uiLang);
 
-  const [categories, counts, user] = await Promise.all([
+  const [categories, counts] = await Promise.all([
     getActiveCategories(),
     getCategoryResourceCounts(),
-    getCurrentUser(),
   ]);
 
   // Las temáticas vienen de la base en español; el diccionario las traduce.
@@ -40,10 +37,7 @@ export default async function LandingPage({
   const claims = [t.landing.claim1, t.landing.claim2, t.landing.claim3];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      {/* La misma barra que el resto de la plataforma */}
-      <SiteHeader user={user} lang={uiLang} />
-
+    <>
       {/* Hero: mensaje y un solo CTA a la izquierda; a la derecha, el producto
           (una ruta a medio recorrer) en vez de decoración. */}
       <section className="mx-auto grid w-full max-w-[1500px] items-center gap-10 px-4 pb-4 pt-10 sm:px-8 sm:pt-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-20 lg:pb-16 lg:pt-24">
@@ -152,8 +146,7 @@ export default async function LandingPage({
       <HowToAddVideo t={t} />
 
       <div className="flex-1" />
-      <SiteFooter lang={uiLang} />
-    </div>
+    </>
   );
 }
 

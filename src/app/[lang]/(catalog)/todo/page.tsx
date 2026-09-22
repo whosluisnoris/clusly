@@ -74,17 +74,17 @@ export default async function TodoPage({
         selected={selectedSlugs}
         sort={sort}
         language={language}
-      />
-
-      <ResourceGrid
-        resources={resources}
-        from="todo"
-        userVotes={userVotes}
-        categoriesByResource={categoriesByResource}
-        favorites={favorites}
-        canVote={!!user}
-        empty={filtering ? t.explore.emptyFiltered : t.explore.empty}
-      />
+      >
+        <ResourceGrid
+          resources={resources}
+          from="todo"
+          userVotes={userVotes}
+          categoriesByResource={categoriesByResource}
+          favorites={favorites}
+          canVote={!!user}
+          empty={filtering ? t.explore.emptyFiltered : t.explore.empty}
+        />
+      </ExploreFilters>
     </main>
   );
 }

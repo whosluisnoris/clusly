@@ -62,6 +62,11 @@ video); el reproductor añade además la fecha absoluta.
   catálogo (miniatura + título + canal). Al pie muestra **las categorías** del recurso
   (hasta 2, con "+N" si hay más); los datos los inyecta cada página vía
   `getCategoriesForResources` (`src/lib/catalog.ts`) y `ResourceGrid`.
+  Tiene el **mismo efecto que las temáticas de la landing** (`GlowFrame`): al pasar
+  el cursor brilla con el color de su temática (el de la categoría de la página, o
+  la primera del recurso), se marca el borde y se levanta. Sobre la miniatura, las
+  playlists llevan "PLAYLIST" abajo a la izquierda y "24 ▶" (número de videos)
+  abajo a la derecha; los videos en inglés, "EN" arriba a la izquierda.
 - **`AuthNav`**: sin sesión muestra "Aportar video", "Entrar" y "Crear cuenta" (CTA);
   con sesión, botón "Aportar video" + menú con "Guardados", "Mis videos" y "Cerrar
   sesión".
@@ -242,7 +247,7 @@ de cada categoría.
   Se usa en el header, el panel de la lista, la encuesta flotante y las tarjetas del
   admin. Adaptada a tokens para verse bien en claro y oscuro.
 - Clases `.glow-*`: el brillo de color de las tarjetas de temática, usado por
-  el componente `GlowCard` (ver [10-componentes-ui.md](10-componentes-ui.md)).
+  los componentes `GlowCard` y `GlowFrame` (ver [10-componentes-ui.md](10-componentes-ui.md)).
 - Clase `.no-scrollbar`: filas que se deslizan de lado sin barra visible (los
   chips de filtros en móvil).
 - Clase `.custom-scroll`: barra de 10px con degradado claro y carril tenue, uniforme

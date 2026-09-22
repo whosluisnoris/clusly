@@ -168,7 +168,8 @@ e idioma en los filtros). `size`: `sm` / `md`.
 |---|---|---|
 | `Card` | Contenedor con superficie | `variant`: `surface` (por defecto), `glass` (paneles que flotan: lista del reproductor, menús), `outline`; `padding`: `none`/`sm`/`md`/`lg`; `interactive` (se levanta al pasar el cursor); `as`: `section`, `form`, `aside`, `article`… |
 | `cardClasses()` | Las clases de `Card`, para un enlace con forma de tarjeta | las mismas |
-| `GlowCard` | La tarjeta de temática de la landing: el color entra como brillo al pasar el cursor | `href`, `color`, `title`; el layout interno va en `className` |
+| `GlowCard` | La tarjeta de temática de la landing: el color entra como brillo al pasar el cursor. Toda la tarjeta es un enlace | `href`, `color`, `title`; el layout interno va en `className` |
+| `GlowFrame` | El mismo efecto en un `<div>`, para tarjetas con varias zonas clicables dentro (la de un video: enlace + voto + corazón) | `color`, más cualquier prop de `<div>` |
 | `IconTile` | Cuadrito de color con ícono | `color`, `size`: `sm`/`md`/`lg`. Dimensiona el `<svg>` solo |
 | `EmptyState` | Lista vacía | `title`, `description`, `action`, `icon` |
 
@@ -183,9 +184,21 @@ e idioma en los filtros). `size`: `sm` / `md`.
 </GlowCard>
 ```
 
-`GlowCard` usa las clases `.glow-*` de `globals.css`; el color llega por la
+```tsx
+// ResourceCard: el enlace, el voto y el corazón viven dentro del marco.
+<GlowFrame color={topicColor(slug)} className="group flex flex-col overflow-hidden ring-1 ring-border">
+  <FavoriteButton … />            {/* absolute: las utilidades ganan a .glow-card */}
+  <LocaleLink href={href}>…</LocaleLink>
+  <VoteControl … />
+</GlowFrame>
+```
+
+Los dos usan las clases `.glow-*` de `globals.css` (en `@layer components`, así
+que cualquier utilidad de Tailwind las puede ajustar); el color llega por la
 variable `--line`, así que acepta cualquier valor CSS (`topicColor(slug)`,
-`var(--accent)`, `var(--complement)`).
+`var(--accent)`, `var(--complement)`). **Toda tarjeta enlazada nueva debería
+usar uno de los dos**, para que el gesto al pasar el cursor sea el mismo en todo
+el sitio.
 
 ### Formularios
 

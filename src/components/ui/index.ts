@@ -20,7 +20,7 @@ export {
 } from "./Button";
 export { TextLink, textLinkClasses, type TextLinkTone } from "./TextLink";
 export { Card, cardClasses, type CardVariant, type CardPadding } from "./Card";
-export { GlowCard } from "./GlowCard";
+export { GlowCard, GlowFrame } from "./GlowCard";
 export { IconTile } from "./IconTile";
 export { Chip } from "./Chip";
 export { Badge, type BadgeTone } from "./Badge";

@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getUserVotes } from "@/lib/votes";
 import { getUserFavorites } from "@/lib/favorites";
 import { ResourceGrid } from "@/components/ResourceGrid";
-import { catColor, topicColor } from "@/lib/color";
+import { topicColor } from "@/lib/color";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { getDictionary, isLocale, localizeCategory, DEFAULT_LOCALE } from "@/lib/i18n";
 import { Page, PageHeader } from "@/components/ui";
@@ -38,7 +38,8 @@ export default async function CategoryPage({
     getCategoriesForResources(resourceIds),
     user ? getUserFavorites(user.id, resourceIds) : Promise.resolve(new Set<string>()),
   ]);
-  const color = catColor(category.color);
+  // Las tarjetas brillan con el color de la temática, como en la landing.
+  const color = topicColor(slug);
   const { name, description } = localizeCategory(category, t);
 
   return (
@@ -47,7 +48,7 @@ export default async function CategoryPage({
         title={name}
         description={description}
         icon={<CategoryIcon slug={slug} />}
-        iconColor={topicColor(slug)}
+        iconColor={color}
         back={{ href: "/todo", label: t.nav.explore }}
       />
       <ResourceGrid

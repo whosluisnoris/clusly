@@ -39,7 +39,7 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
         </LocaleLink>
         <LocaleLink
           href="/registro"
-          className="brand-gradient rounded-full px-4 py-2 text-sm font-bold text-on-accent transition hover:brightness-110 active:scale-95"
+          className="rounded-full bg-foreground px-4 py-2 text-sm font-bold text-background transition hover:opacity-90 active:scale-95"
         >
           {t.nav.signUp}
         </LocaleLink>

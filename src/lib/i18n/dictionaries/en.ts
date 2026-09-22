@@ -74,41 +74,27 @@ export const en: Dictionary = {
   },
 
   landing: {
-    eyebrow: "Learn tech without getting lost",
     titleLead: "In an endless world of videos,",
     titleAccent: "your path starts here.",
-    subtitle:
-      "{site} gathers the best of YouTube for learning tech — free, in your language — and turns it into clear paths, so you move forward step by step instead of drowning in the scroll.",
+    subtitle: "The best of YouTube for learning tech. Free, in your language, and in order.",
     ctaPrimary: "Start your path",
     ctaSecondary: "or watch the Platzi Lives",
-    principle1Title: "Curated by topic",
-    principle1Text:
-      "Every resource lives in its subject. No more blind searching through endless results.",
-    principle2Title: "Free, in your language",
-    principle2Text:
-      "Only quality content, free and in the language you pick, gathered in one place.",
-    principle3Title: "A step-by-step path",
-    principle3Text:
-      "Curated playlists in order, ready to follow start to finish without juggling a thousand tabs.",
+    claim1: "Curated by topic",
+    claim2: "Free, in your language",
+    claim3: "Step by step",
+    routeSample: "sample path",
+    routeProgress: "{done} of {total}",
+    routeNext: "Next",
     topicsTitle: "Explore by topic",
     seeAll: "See all →",
     resourceCount: { one: "{n} resource", other: "{n} resources" },
-    howToEyebrow: "Give back to the community",
-    howToTitle: "How to add a video",
-    howToSubtitle:
-      "The catalog is filled by the people learning here. If a video helped you, add it: four steps, under a minute.",
-    howToStep1Title: "Copy the link on YouTube",
-    howToStep1Text:
-      "A single video or a whole playlist. The link is all we need: title, thumbnail and duration come across on their own.",
-    howToStep2Title: "Paste it into Clusly",
-    howToStep2Text:
-      "Open “Add a video” and paste the link. If someone beat you to it we say so right there and take you to the one already in.",
-    howToStep3Title: "Pick topics and language",
-    howToStep3Text:
-      "Tag the categories it belongs to and the language it's spoken in. That's what makes someone else find it when they need it.",
-    howToStep4Title: "Publish it and let the community vote",
-    howToStep4Text:
-      "Signed in, it lands in the catalog right away; without an account it waits for review. From there, votes push it up.",
+    howToTitle: "Did a video help you? Add it.",
+    howToSubtitle: "Four steps, under a minute.",
+    howToStep1: "Copy the YouTube link",
+    howToStep2: "Paste it into Clusly",
+    howToStep3: "Pick topic and language",
+    howToStep4: "Publish and let the community vote",
+    howToCta: "Add a video",
   },
 
   categories: {

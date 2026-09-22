@@ -64,8 +64,9 @@ export function MobileMenu({
             className="absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col border-r border-border bg-background p-4 shadow-2xl"
           >
             <div className="mb-4 flex items-center justify-between">
-              <span className="font-display text-lg font-black tracking-tight brand-text">
+              <span className="font-display text-xl font-extrabold tracking-tight text-foreground">
                 {SITE_NAME}
+                <span className="text-accent">.</span>
               </span>
               <button
                 type="button"

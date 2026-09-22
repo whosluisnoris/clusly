@@ -57,8 +57,11 @@ export async function getAllResources(): Promise<ResourceRow[]> {
 export type ResourceSort = "top" | "new";
 
 // Exploración con filtros: por categorías (unión de slugs) y orden (más votados o
-// más recientes). Resuelve slugs→ids y luego los recursos en esos ids, para no
-// duplicar filas cuando un recurso pertenece a varias categorías seleccionadas.
+// más recientes). Resuelve slugs→ids y luego trae los recursos con un join
+// interno a esas categorías (el mismo patrón que getResourcesByCategory). Van en
+// dos consultas y no en tres: antes se leía aparte la tabla puente, y cada
+// viaje de más se notaba al tocar un filtro. El embed de PostgREST devuelve cada
+// recurso una sola vez aunque pertenezca a varias categorías seleccionadas.
 export async function getResourcesFiltered(opts: {
   categorySlugs?: string[];
   sort?: ResourceSort;
@@ -68,32 +71,29 @@ export async function getResourcesFiltered(opts: {
   const orderCol = sort === "new" ? "added_at" : "vote_count";
   const supabase = getSupabase();
 
-  let query = supabase.from("resources").select(RESOURCE_COLS);
+  const slugs = opts.categorySlugs?.filter(Boolean) ?? [];
+  let catIds: string[] = [];
+  if (slugs.length > 0) {
+    const { data: cats } = await supabase.from("categories").select("id").in("slug", slugs);
+    catIds = ((cats as { id: string }[] | null) ?? []).map((c) => c.id);
+    if (catIds.length === 0) return [];
+  }
+
+  let query =
+    catIds.length > 0
+      ? supabase
+          .from("resources")
+          .select(`${RESOURCE_COLS}, resource_categories!inner(category_id)`)
+          .in("resource_categories.category_id", catIds)
+      : supabase.from("resources").select(RESOURCE_COLS);
 
   // Idioma hablado del video (distinto del idioma de la interfaz).
   if (opts.language) query = query.eq("language", opts.language);
 
-  const slugs = opts.categorySlugs?.filter(Boolean) ?? [];
-  if (slugs.length > 0) {
-    const { data: cats } = await supabase.from("categories").select("id").in("slug", slugs);
-    const catIds = ((cats as { id: string }[] | null) ?? []).map((c) => c.id);
-    if (catIds.length === 0) return [];
-
-    const { data: links } = await supabase
-      .from("resource_categories")
-      .select("resource_id")
-      .in("category_id", catIds);
-    const ids = [
-      ...new Set(((links as { resource_id: string }[] | null) ?? []).map((l) => l.resource_id)),
-    ];
-    if (ids.length === 0) return [];
-    query = query.in("id", ids);
-  }
-
   const { data } = await query
     .order(orderCol, { ascending: false })
     .order("added_at", { ascending: false });
-  return (data as ResourceRow[] | null) ?? [];
+  return ((data as ResourceRow[] | null) ?? []).map(stripJoin);
 }
 
 export async function getResourceByYoutubeId(youtubeId: string): Promise<ResourceRow | null> {

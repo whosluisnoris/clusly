@@ -72,8 +72,12 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Tocar getUser() dispara el refresco del token si hace falta.
-  await supabase.auth.getUser();
+  // Tocar la sesión dispara el refresco del token si hace falta. Se usa
+  // getClaims() y no getUser(): con llaves de firma asimétricas valida el JWT
+  // localmente en vez de hacer un viaje a Supabase Auth en *cada* request
+  // (incluidos los prefetch de los enlaces), que era parte de la espera al
+  // navegar. Con llaves simétricas cae solo a getUser(), así que no pierde nada.
+  await supabase.auth.getClaims();
 
   // Deja anotado el idioma de la URL para que navegar por el sitio en un idioma
   // lo recuerde en la próxima visita, sin tener que tocar el selector.

@@ -22,11 +22,14 @@ export default async function CategoryPage({
 }) {
   const { slug, lang } = await params;
   const t = getDictionary(isLocale(lang) ? lang : DEFAULT_LOCALE);
-  const category = await getCategoryBySlug(slug);
+  // La sesión no depende de la categoría: se pide en paralelo.
+  const [category, user] = await Promise.all([
+    getCategoryBySlug(slug),
+    getCurrentUser(),
+  ]);
   if (!category) notFound();
 
   const resources = await getResourcesByCategory(category.id);
-  const user = await getCurrentUser();
   const resourceIds = resources.map((r) => r.id);
   const [userVotes, categoriesByResource, favorites] = await Promise.all([
     user ? getUserVotes(user.id, resourceIds) : Promise.resolve<Record<string, number>>({}),

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { topicColor } from "@/lib/color";
+import { ResourceGrid } from "@/components/ResourceGrid";
+import type { ResourceRow } from "@/lib/types";
 import {
   Alert,
   Avatar,
@@ -170,6 +172,22 @@ export default function UiShowcasePage() {
           </Row>
         </Demo>
 
+        <Demo title="ResourceCard (ResourceGrid)">
+          <ResourceGrid
+            resources={SAMPLE_RESOURCES}
+            empty=""
+            categoriesByResource={{
+              v1: [{ slug: "web", name: "Web", color: null }],
+              p1: [
+                { slug: "ia", name: "IA", color: null },
+                { slug: "datos", name: "Datos", color: null },
+                { slug: "programacion", name: "Programación", color: null },
+              ],
+              p2: [{ slug: "diseno", name: "Diseño", color: null }],
+            }}
+          />
+        </Demo>
+
         <Demo title="Field / Input / Textarea / Select">
           <Card padding="lg" className="flex max-w-xl flex-col gap-6">
             <Field label="Correo" hint="Nunca lo mostramos.">
@@ -255,6 +273,56 @@ export default function UiShowcasePage() {
     </Page>
   );
 }
+
+// Recursos de ejemplo para ver la tarjeta sin base de datos: un video en
+// inglés, una playlist y una playlist sin miniatura.
+const SAMPLE_BASE = {
+  channel_title: "Canal de ejemplo",
+  description: null,
+  published_at: null,
+  added_at: "2026-01-01T00:00:00Z",
+  synced_at: null,
+  source: "manual",
+} satisfies Partial<ResourceRow>;
+
+const SAMPLE_RESOURCES: ResourceRow[] = [
+  {
+    ...SAMPLE_BASE,
+    id: "v1",
+    kind: "video",
+    youtube_id: "dQw4w9WgXcQ",
+    title: "Un video suelto, en inglés, con título de dos líneas para ver el recorte",
+    thumbnail_url: null,
+    video_count: null,
+    duration_seconds: 754,
+    vote_count: 12,
+    language: "en",
+  },
+  {
+    ...SAMPLE_BASE,
+    id: "p1",
+    kind: "playlist",
+    youtube_id: "PLsample1",
+    title: "Una playlist curada de principio a fin",
+    thumbnail_url: "https://i.ytimg.com/vi/tRsQsTMvPNg/hqdefault.jpg",
+    video_count: 24,
+    duration_seconds: null,
+    vote_count: 31,
+    language: "es",
+  },
+  {
+    ...SAMPLE_BASE,
+    id: "p2",
+    kind: "playlist",
+    youtube_id: "PLsample2",
+    title: "Playlist sin miniatura",
+    thumbnail_url: null,
+    video_count: 1,
+    duration_seconds: null,
+    vote_count: 0,
+    language: "es",
+  },
+];
 
 function Demo({ title, children }: { title: string; children: React.ReactNode }) {
   return (

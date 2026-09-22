@@ -11,11 +11,16 @@ import { plural, localizeCategory } from "@/lib/i18n";
 import { VoteControl } from "@/components/VoteControl";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { topicColor } from "@/lib/color";
+import { GlowFrame } from "@/components/ui";
 
-// Tarjeta del catálogo (grid). El enlace envuelve la miniatura y el título; el
-// control de voto y el corazón de guardar viven fuera de él para no anidar
-// botones dentro de un <a>.
-// `accent` (color de la categoría) tiñe el marco y el distintivo de tipo.
+// Tarjeta del catálogo (grid), con el mismo efecto que las temáticas de la
+// landing (GlowFrame): al pasar el cursor el color entra como brillo detrás de
+// la tarjeta, reflejo y borde, y se levanta un poco. El color es el de su
+// temática: `accent` si la página es de una categoría, o la primera categoría
+// del recurso.
+//
+// El enlace envuelve la miniatura y el título; el control de voto y el corazón
+// de guardar viven fuera de él para no anidar botones dentro de un <a>.
 // `categories` muestra a qué filtro(s) pertenece el video.
 export function ResourceCard({
   resource,
@@ -45,24 +50,16 @@ export function ResourceCard({
 
   const isPlaylist = resource.kind === "playlist";
   const href = `/recurso/${resource.youtube_id}${from ? `?from=${encodeURIComponent(from)}` : ""}`;
-  const line = accent || "var(--accent)";
+  const line =
+    accent || (categories?.[0] ? topicColor(categories[0].slug) : "var(--accent)");
 
+  const videoCount = resource.video_count ?? 0;
   const meta = isPlaylist
-    ? plural(t.card.videoCount, resource.video_count ?? 0)
+    ? plural(t.card.videoCount, videoCount)
     : formatDuration(resource.duration_seconds) ?? timeAgo(resource.published_at) ?? "";
 
   return (
-    <div
-      style={{ ["--line" as string]: line }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-border transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:ring-2 hover:ring-[var(--line)] motion-reduce:hover:translate-y-0"
-    >
-      {/* Marca de color de la categoría en el borde superior */}
-      <span
-        className="h-1 w-full shrink-0"
-        style={{ backgroundColor: line }}
-        aria-hidden="true"
-      />
-
+    <GlowFrame color={line} className="group flex flex-col overflow-hidden ring-1 ring-border">
       {/* Corazón de guardar: aparece al pasar el cursor sobre la tarjeta.
           `canVote` indica que hay sesión, así que sirve para ambas acciones. */}
       <FavoriteButton
@@ -72,7 +69,7 @@ export function ResourceCard({
         removeOnUnsave={removeOnUnsave}
       />
 
-      <LocaleLink href={href} className="flex flex-1 flex-col">
+      <LocaleLink href={href} className="flex flex-1 flex-col focus-visible:outline-none">
         <div className="relative aspect-video w-full overflow-hidden bg-elevated">
           {resource.thumbnail_url || resource.kind === "video" ? (
             <Image
@@ -80,37 +77,42 @@ export function ResourceCard({
               alt=""
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
-              className="object-cover transition duration-300 group-hover:scale-105"
+              className="object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               onError={() => setImgError(true)}
               unoptimized={imgError}
             />
           ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-faint">
-                {t.card.playlist}
-              </span>
+            <div className="grid h-full place-items-center text-faint">
+              <PlaylistIcon className="h-8 w-8" />
             </div>
           )}
+
+          {/* Playlist: a un lado qué es, al otro cuántos videos trae */}
           {isPlaylist && (
-            <span
-              className="absolute bottom-2 right-2 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-on-accent"
-              style={{ backgroundColor: line }}
-            >
-              {plural(t.card.videoCount, resource.video_count ?? 0)}
-            </span>
+            <>
+              <span className={`${OVERLAY} bottom-2 left-2`}>
+                <PlaylistIcon className="h-3.5 w-3.5" />
+                {t.card.playlist}
+              </span>
+              <span className={`${OVERLAY} bottom-2 right-2 tabular-nums`}>
+                <span className="sr-only">{plural(t.card.videoCount, videoCount)}</span>
+                <span aria-hidden="true">{videoCount}</span>
+                <PlayIcon className="h-3 w-3" />
+              </span>
+            </>
           )}
 
           {/* Idioma hablado del video: solo se marca el que no es español,
-              porque el catálogo es mayoritariamente español. */}
+              porque el catálogo es mayoritariamente español. Va arriba a la
+              izquierda: abajo están las leyendas de playlist y arriba a la
+              derecha el corazón. */}
           {resource.language === "en" && (
-            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-              EN
-            </span>
+            <span className={`${OVERLAY} left-2 top-2`}>EN</span>
           )}
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-3.5 pb-2">
-          <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-foreground">
+          <h3 className="font-display line-clamp-2 text-[15px] font-bold leading-snug text-foreground">
             {resource.title}
           </h3>
           {resource.channel_title && (
@@ -150,6 +152,38 @@ export function ResourceCard({
         />
         {meta && <span className="text-xs text-faint">{meta}</span>}
       </div>
-    </div>
+    </GlowFrame>
+  );
+}
+
+// Leyenda sobre la miniatura: oscura en ambos temas para leerse encima de
+// cualquier imagen.
+const OVERLAY =
+  "absolute inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm";
+
+function PlayIcon({ className }: { className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M7 4.5v15l12.5-7.5z" />
+    </svg>
+  );
+}
+
+// Lista con una flecha de reproducir: el ícono habitual de "playlist".
+function PlaylistIcon({ className }: { className: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M3 6h13M3 12h9M3 18h7" />
+      <path d="M16 13.5v6l5-3z" fill="currentColor" />
+    </svg>
   );
 }

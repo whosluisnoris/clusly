@@ -91,7 +91,7 @@ export function FavoriteButton({
       aria-pressed={saved}
       aria-label={label}
       title={label}
-      className={`glass absolute right-2 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow-lg backdrop-blur-md transition duration-200 hover:scale-110 active:scale-95 ${
+      className={`glass absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow-lg backdrop-blur-md transition duration-200 hover:scale-110 active:scale-95 ${
         saved
           ? "text-accent-ink opacity-100"
           : // En móvil no hay hover: siempre visible. En escritorio aparece al

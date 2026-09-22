@@ -30,7 +30,7 @@ const INITIAL_STEP = 2;
 //
 // Cada avance: "Siguiente" se hunde un instante (como una pulsación), la fila
 // se completa y su ✓ entra con un "pop" (`.route-pop` en globals.css: crece
-// de más, rebota y suelta un anillo que se desvanece).
+// de más y rebota).
 //
 // Con "reducir movimiento" la ruta sigue avanzando con sus fundidos y la barra
 // llenándose; solo se quitan la pulsación, el pop, el rebote y el

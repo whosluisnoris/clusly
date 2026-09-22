@@ -21,9 +21,14 @@ const INITIAL_STEP = 2;
 // actualizan la barra, el contador, el resaltado y los ✓, así que se mueven a
 // la vez. Solo hay transiciones de CSS entre un paso y el siguiente.
 //
-// Con "reducir movimiento" la ruta sigue avanzando (es información, no
-// adorno), pero sin transiciones: cada paso cambia de golpe. El ciclo se para
-// mientras la tarjeta no está en pantalla o la pestaña está oculta.
+// Ojo: en Tailwind v4 `scale-*` y `translate-*` escriben las propiedades CSS
+// `scale` y `translate`, no `transform`, así que son esas las que se listan
+// en cada `transition-[…]`; con `transform` saltarían de golpe.
+//
+// Con "reducir movimiento" la ruta sigue avanzando con sus fundidos y la barra
+// llenándose; solo se quitan el rebote del ✓ y el desplazamiento de
+// "Siguiente". El ciclo se para mientras la tarjeta no está en pantalla o la
+// pestaña está oculta.
 export function RoutePreview({
   topicName,
   sampleLabel,
@@ -96,7 +101,7 @@ export function RoutePreview({
 
       <div className="h-1 overflow-hidden rounded-full bg-fill-strong">
         <div
-          className="h-1 rounded-full transition-[width] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+          className="h-1 rounded-full transition-[width] duration-900 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{ width: `${(step / total) * 100}%`, backgroundColor: "var(--line)" }}
         />
       </div>
@@ -108,14 +113,14 @@ export function RoutePreview({
           return (
             <div
               key={i}
-              className={`flex items-center gap-3 rounded-xl p-2 ring-1 transition-colors duration-500 motion-reduce:transition-none sm:gap-3.5 sm:p-2.5 ${
+              className={`flex items-center gap-3 rounded-xl p-2 ring-1 transition-[background-color,box-shadow] duration-500 sm:gap-3.5 sm:p-2.5 ${
                 next ? "bg-fill ring-border" : "bg-transparent ring-transparent"
               }`}
             >
               <span className="grid h-[42px] w-[72px] shrink-0 place-items-center rounded-md bg-surface-2 sm:h-[54px] sm:w-24 sm:rounded-lg">
                 <svg
                   viewBox="0 0 24 24"
-                  className={`h-4 w-4 fill-current transition-colors duration-500 motion-reduce:transition-none ${
+                  className={`h-4 w-4 fill-current transition-colors duration-500 ${
                     next ? "text-accent" : "text-faint"
                   }`}
                 >
@@ -123,7 +128,7 @@ export function RoutePreview({
                 </svg>
               </span>
               <span
-                className={`flex flex-1 flex-col gap-2 transition-opacity duration-500 motion-reduce:transition-none ${
+                className={`flex flex-1 flex-col gap-2 transition-opacity duration-500 ${
                   done ? "opacity-55" : "opacity-100"
                 }`}
               >
@@ -133,7 +138,7 @@ export function RoutePreview({
               {/* ✓ y "Siguiente" comparten hueco: el paso decide cuál se ve */}
               <span className="relative h-7 w-[84px] shrink-0">
                 <span
-                  className={`absolute right-0 top-0 grid h-7 w-7 place-items-center rounded-full transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none ${
+                  className={`absolute right-0 top-0 grid h-7 w-7 place-items-center rounded-full transition-[opacity,scale] duration-[450ms,600ms] ease-[ease,cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:scale-100 ${
                     done ? "scale-100 opacity-100" : "scale-40 opacity-0"
                   }`}
                   style={{
@@ -154,7 +159,7 @@ export function RoutePreview({
                   </svg>
                 </span>
                 <span
-                  className={`absolute right-0 top-0 flex h-7 items-center rounded-full bg-accent px-3 text-xs font-bold text-on-accent transition-[opacity,transform] duration-500 motion-reduce:transition-none ${
+                  className={`absolute right-0 top-0 flex h-7 items-center rounded-full bg-accent px-3 text-xs font-bold text-on-accent transition-[opacity,translate] duration-[450ms,600ms] ease-[ease,cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:translate-y-0 ${
                     next ? "translate-y-0 opacity-100" : "translate-y-1.5 opacity-0"
                   }`}
                 >

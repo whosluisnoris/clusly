@@ -176,7 +176,7 @@ export const en: Dictionary = {
   },
 
   resource: {
-    backTo: "← Back to {target}",
+    backTo: "Back to {target}",
     backAll: "All",
     voteHint: "Did it help? Vote so more people find it.",
     playlistMeta: "Playlist · {n} videos",
@@ -300,6 +300,7 @@ export const en: Dictionary = {
     statVotesHint: "resources you've voted on",
     statOpinions: "Feedback",
     statOpinionsHint: "what you've told us",
+    shortcutsLabel: "Shortcuts",
     shortcutSubmit: "+ Add a video",
     shortcutSaved: "See saved",
     shortcutOpinion: "Leave feedback",
@@ -314,7 +315,7 @@ export const en: Dictionary = {
       "What we learn while building Clusly: how to study with judgement, platform news and finds from the catalog.",
     empty: "No articles published yet. We'll write the first one soon.",
     readingTime: "{n} min read",
-    back: "← Back to the blog",
+    back: "Back to the blog",
     ctaTitle: "Know a video that belongs on Clusly?",
     ctaButton: "+ Add a video",
     notFound: "Article not found",

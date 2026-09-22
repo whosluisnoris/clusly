@@ -1,4 +1,3 @@
-import { LocaleLink } from "@/components/LocaleLink";
 import { notFound } from "next/navigation";
 import {
   getResourceByYoutubeId,
@@ -21,6 +20,7 @@ import {
   DEFAULT_LOCALE,
   type Dictionary,
 } from "@/lib/i18n";
+import { BackLink, EmptyState, Page } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -71,13 +71,10 @@ export default async function ResourcePage({
   const main = resourceToPlayable(resource);
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 sm:px-8">
-      <LocaleLink
-        href={back.href}
-        className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-accent-ink"
-      >
+    <Page>
+      <BackLink href={back.href} className="mb-5">
         {fmt(t.resource.backTo, { target: back.label })}
-      </LocaleLink>
+      </BackLink>
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <VoteControl
@@ -97,9 +94,11 @@ export default async function ResourcePage({
       </div>
 
       {resource.kind === "playlist" && (
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-foreground sm:text-2xl">{resource.title}</h1>
-          <p className="mt-1 text-sm text-muted">
+        <div className="mb-6">
+          <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-foreground sm:text-3xl">
+            {resource.title}
+          </h1>
+          <p className="mt-2 text-sm text-muted sm:text-[15px]">
             {resource.channel_title ? `${resource.channel_title} · ` : ""}
             {fmt(t.resource.playlistMeta, {
               n: resource.video_count ?? episodes?.length ?? 0,
@@ -109,12 +108,10 @@ export default async function ResourcePage({
       )}
 
       {resource.kind === "playlist" && (episodes?.length ?? 0) === 0 ? (
-        <p className="py-16 text-center text-sm text-faint">
-          {t.resource.emptyPlaylist}
-        </p>
+        <EmptyState description={t.resource.emptyPlaylist} />
       ) : (
         <ResourceDetail main={main} episodes={episodes} />
       )}
-    </main>
+    </Page>
   );
 }

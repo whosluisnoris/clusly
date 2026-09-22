@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { LocaleLink } from "@/components/LocaleLink";
 import { getSessionId } from "@/lib/analytics";
 import { SENTIMENTS, MAX_MESSAGE, type Sentiment } from "@/lib/opinions";
 import { useT } from "@/components/I18nProvider";
 import { fmt } from "@/lib/i18n";
+import { Alert, Button, Card, Chip, Field, Textarea, TextLink, textLinkClasses } from "@/components/ui";
 
 // Formulario de la sección de opiniones: cómo te sientes + qué quieres contar.
 // Funciona sin cuenta (llega como "Anónimo"); con sesión va firmada con el
@@ -71,99 +71,73 @@ export function OpinionForm({
 
   if (sent) {
     return (
-      <div className="glass backdrop-blur-md rounded-2xl p-6 text-center">
-        <p className="text-sm font-semibold text-foreground">
+      <Card padding="lg" className="text-center">
+        <p className="font-display text-lg font-bold text-foreground">
           {t.opinions.thanksTitle}
         </p>
         <p className="mt-1.5 text-sm text-muted">{t.opinions.thanksBody}</p>
         <button
           type="button"
           onClick={() => setSent(false)}
-          className="mt-4 text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
+          className={textLinkClasses("accent", "mt-4 text-sm")}
         >
           {t.opinions.writeAnother}
         </button>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <form onSubmit={submit} className="glass backdrop-blur-md rounded-2xl p-5 sm:p-6">
-      <fieldset>
-        <legend className="text-sm font-bold text-foreground">
-          {t.opinions.sentimentQuestion}
-        </legend>
-        <div className="mt-3 flex flex-wrap gap-2.5">
+    <Card as="form" onSubmit={submit} className="flex flex-col gap-6">
+      <Field group label={t.opinions.sentimentQuestion}>
+        <div className="flex flex-wrap gap-2">
           {SENTIMENTS.map((value) => {
             const { emoji, label } = labels[value];
-            const active = sentiment === value;
             return (
-              <button
+              <Chip
                 key={value}
-                type="button"
+                pressed={sentiment === value}
                 onClick={() => setSentiment(value)}
-                aria-pressed={active}
-                className={`rounded-lg px-3.5 py-2 text-sm font-medium transition active:scale-95 ${
-                  active
-                    ? "bg-accent text-on-accent"
-                    : "bg-fill text-foreground ring-1 ring-border hover:bg-accent/15 hover:text-accent-ink"
-                }`}
               >
-                {emoji} {label}
-              </button>
+                <span aria-hidden="true">{emoji}</span> {label}
+              </Chip>
             );
           })}
         </div>
-      </fieldset>
+      </Field>
 
-      <label
-        htmlFor="opinion-message"
-        className="mt-5 block text-sm font-bold text-foreground"
-      >
-        {t.opinions.messageLabel}
-      </label>
-      <textarea
-        id="opinion-message"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        maxLength={MAX_MESSAGE}
-        rows={4}
-        placeholder={t.opinions.messagePlaceholder}
-        className="mt-2 w-full resize-y rounded-xl bg-fill px-3.5 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-      />
+      <Field label={t.opinions.messageLabel} counter={`${message.length}/${MAX_MESSAGE}`}>
+        <Textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          maxLength={MAX_MESSAGE}
+          placeholder={t.opinions.messagePlaceholder}
+        />
+      </Field>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-muted">
+      {error && <Alert tone="error">{error}</Alert>}
+
+      <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs leading-relaxed text-muted">
           {displayName ? (
-            <>{fmt(t.opinions.signedAs, { name: displayName })}</>
+            fmt(t.opinions.signedAs, { name: displayName })
           ) : (
             <>
               {t.opinions.anonAs}{" "}
-              <LocaleLink
-                href="/entrar?next=/opiniones"
-                className="text-accent-ink underline underline-offset-2"
-              >
-                {t.opinions.signInToSign}
-              </LocaleLink>{" "}
+              <TextLink href="/entrar?next=/opiniones">{t.opinions.signInToSign}</TextLink>{" "}
               {t.opinions.signInToSignAfter}
             </>
           )}
         </p>
-        <div className="flex items-center gap-3">
-          <span className="text-xs tabular-nums text-faint">
-            {message.length}/{MAX_MESSAGE}
-          </span>
-          <button
-            type="submit"
-            disabled={sending}
-            className="brand-gradient rounded-full px-5 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:opacity-60"
-          >
-            {sending ? t.common.sending : t.opinions.submit}
-          </button>
-        </div>
+        <Button
+          type="submit"
+          loading={sending}
+          loadingText={t.common.sending}
+          className="w-full sm:w-auto"
+        >
+          {t.opinions.submit}
+        </Button>
       </div>
-
-      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-    </form>
+    </Card>
   );
 }

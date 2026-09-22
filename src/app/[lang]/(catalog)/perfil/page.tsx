@@ -1,9 +1,9 @@
-import { LocaleLink } from "@/components/LocaleLink";
 import { redirect } from "next/navigation";
 import { getCurrentUser, type Role } from "@/lib/auth";
 import { getProfile, getProfileStats } from "@/lib/profile";
 import { ProfileCard } from "@/components/ProfileCard";
 import { getDictionary, isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
+import { ButtonLink, GlowCard, Page, SectionHeader } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -61,54 +61,39 @@ export default async function PerfilPage({
   ];
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-8">
+    <Page size="content">
       <ProfileCard
         profile={profile}
         email={user.email}
         roleLabel={ROLE_LABEL[user.role]}
       />
 
-      <section aria-label="Tu actividad" className="mt-6">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">
-          {t.profile.activityTitle}
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section aria-labelledby="actividad" className="mt-10">
+        <SectionHeader size="sm" id="actividad" title={t.profile.activityTitle} />
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
           {cards.map((c) => (
-            <LocaleLink
-              key={c.label}
-              href={c.href}
-              title={c.hint}
-              className="rounded-xl bg-surface p-4 ring-1 ring-border transition hover:ring-accent/40"
-            >
-              <p className="text-2xl font-black tabular-nums text-foreground">
+            <GlowCard key={c.label} href={c.href} title={c.hint} className="p-4 sm:p-5">
+              <p className="font-display text-3xl font-extrabold tabular-nums text-foreground">
                 {c.value}
               </p>
-              <p className="mt-0.5 text-xs font-semibold text-muted">{c.label}</p>
-            </LocaleLink>
+              <p className="mt-1 text-xs font-semibold text-muted sm:text-[13px]">{c.label}</p>
+            </GlowCard>
           ))}
         </div>
       </section>
 
-      <section aria-label="Atajos" className="mt-6 flex flex-wrap gap-3">
-        <LocaleLink
-          href="/enviar"
-          className="brand-gradient rounded-full px-5 py-2.5 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95"
-        >
-          {t.profile.shortcutSubmit}
-        </LocaleLink>
-        <LocaleLink
-          href="/guardados"
-          className="rounded-full bg-fill px-5 py-2.5 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong"
-        >
+      <section
+        aria-label={t.profile.shortcutsLabel}
+        className="mt-8 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap"
+      >
+        <ButtonLink href="/enviar">{t.profile.shortcutSubmit}</ButtonLink>
+        <ButtonLink href="/guardados" variant="secondary">
           {t.profile.shortcutSaved}
-        </LocaleLink>
-        <LocaleLink
-          href="/opiniones"
-          className="rounded-full bg-fill px-5 py-2.5 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong"
-        >
+        </ButtonLink>
+        <ButtonLink href="/opiniones" variant="secondary">
           {t.profile.shortcutOpinion}
-        </LocaleLink>
+        </ButtonLink>
       </section>
-    </main>
+    </Page>
   );
 }

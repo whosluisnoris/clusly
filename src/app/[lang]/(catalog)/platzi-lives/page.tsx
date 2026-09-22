@@ -10,6 +10,17 @@ import { fmt } from "@/lib/i18n";
 import { LOFI_STREAM } from "@/lib/constants";
 import { trackEvent } from "@/lib/analytics";
 import type { LiveStream } from "@/lib/invidious";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Page,
+  PageHeader,
+  SectionHeader,
+  Select,
+  Skeleton,
+} from "@/components/ui";
 
 type SortOrder = "desc" | "asc";
 
@@ -78,31 +89,37 @@ export default function PlatziLivesPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 sm:px-8">
-      {/* Barra propia de la pestaña */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-foreground">{t.lives.title}</h1>
-          {liveNow.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-red-400 ring-1 ring-red-600/40">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
-              {t.lives.liveNow}
-            </span>
-          )}
-        </div>
-        <button
-          onClick={refresh}
-          disabled={loading}
-          className="rounded-lg border border-accent/30 bg-transparent px-4 py-2 text-sm font-medium text-accent-ink transition hover:bg-accent/10 disabled:opacity-50"
-        >
-          {loading ? t.lives.searching : t.lives.refresh}
-        </button>
-      </div>
+    <Page>
+      {/* Cabecera compacta: aquí el protagonista es el reproductor */}
+      <PageHeader
+        size="md"
+        title={
+          <span className="flex flex-wrap items-center gap-3">
+            {t.lives.title}
+            {liveNow.length > 0 && (
+              <Badge tone="live" size="md" dot="pulse">
+                {t.lives.liveNow}
+              </Badge>
+            )}
+          </span>
+        }
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={refresh}
+            loading={loading}
+            loadingText={t.lives.searching}
+          >
+            {t.lives.refresh}
+          </Button>
+        }
+      />
 
       {error && (
-        <div className="mb-5 rounded-lg bg-red-900/30 px-4 py-3 text-sm text-red-300 ring-1 ring-red-700/50">
+        <Alert tone="error" className="mb-5">
           {fmt(t.lives.error, { message: error })}
-        </div>
+        </Alert>
       )}
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px] xl:grid-cols-[minmax(0,1fr)_430px]">
@@ -111,17 +128,27 @@ export default function PlatziLivesPage() {
           {displayed ? (
             <PlayerPanel stream={displayed} autoplay={chosen !== null} />
           ) : (
-            <div className="aspect-video w-full animate-pulse rounded-xl bg-surface" />
+            <Skeleton className="aspect-video w-full rounded-2xl" />
           )}
         </div>
 
         {/* Lista lateral */}
-        <aside className="glass backdrop-blur-md custom-scroll flex flex-col gap-10 rounded-2xl p-4 sm:p-5 lg:max-h-[80vh] lg:overflow-y-auto">
+        <Card
+          as="aside"
+          variant="glass"
+          padding="none"
+          className="custom-scroll flex flex-col gap-10 p-4 sm:p-5 lg:max-h-[80vh] lg:overflow-y-auto"
+        >
           <section aria-label={t.lives.liveNowSection}>
-            <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-              {t.lives.liveNowSection}
-            </h2>
+            <SectionHeader
+              size="sm"
+              title={
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-danger motion-reduce:animate-none" />
+                  {t.lives.liveNowSection}
+                </span>
+              }
+            />
             <div className="flex flex-col gap-3">
               {liveNow.map((s) => (
                 <VideoListItem
@@ -142,25 +169,26 @@ export default function PlatziLivesPage() {
           </section>
 
           <section aria-label={t.lives.pastSection}>
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
-                {t.lives.pastSection}
-              </h2>
-              <select
-                value={order}
-                onChange={(e) => setOrder(e.target.value as SortOrder)}
-                aria-label={t.lives.sortLabel}
-                className="rounded-lg bg-surface px-3 py-1.5 text-xs text-muted ring-1 ring-border focus:outline-none focus:ring-accent/50"
-              >
-                <option value="desc">{t.lives.sortNewest}</option>
-                <option value="asc">{t.lives.sortOldest}</option>
-              </select>
-            </div>
+            <SectionHeader
+              size="sm"
+              title={t.lives.pastSection}
+              action={
+                <Select
+                  compact
+                  value={order}
+                  onChange={(e) => setOrder(e.target.value as SortOrder)}
+                  aria-label={t.lives.sortLabel}
+                >
+                  <option value="desc">{t.lives.sortNewest}</option>
+                  <option value="asc">{t.lives.sortOldest}</option>
+                </Select>
+              }
+            />
 
             {loading && streams.length === 0 ? (
               <div className="flex flex-col gap-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-24 animate-pulse rounded-xl bg-surface" />
+                  <Skeleton key={i} className="h-24 rounded-xl" />
                 ))}
               </div>
             ) : past.length === 0 ? (
@@ -180,12 +208,12 @@ export default function PlatziLivesPage() {
               </div>
             )}
           </section>
-        </aside>
+        </Card>
       </div>
 
       {/* Encuesta flotante: su pregunta es sobre Platzi Lives, así que solo
           se muestra en esta ruta (no en el resto del catálogo). */}
       <FeedbackPoll />
-    </main>
+    </Page>
   );
 }

@@ -6,6 +6,7 @@ import { useT, useLocalePath } from "@/components/I18nProvider";
 import { localizeCategory } from "@/lib/i18n";
 import type { Category, ResourceLanguage } from "@/lib/types";
 import type { ResourceSort } from "@/lib/catalog";
+import { Chip } from "@/components/ui";
 
 // Barra de filtros de la exploración. El estado vive en la URL
 // (?cat=slug,slug&sort=top|new&lang=es|en) para que sea compartible y el
@@ -63,65 +64,40 @@ export function ExploreFilters({
 
   return (
     <>
-      <div className="mb-8 flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <div className="flex items-center gap-1.5">
-            <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-faint">
-              {t.explore.sortLabel}
-            </span>
-            <SortButton
-              active={srt === "top"}
-              onClick={() => pushState(sel, "top", lng)}
-            >
+      <div className="mb-8 flex flex-col gap-4 sm:mb-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+          <FilterGroup label={t.explore.sortLabel}>
+            <Chip variant="soft" pressed={srt === "top"} onClick={() => pushState(sel, "top", lng)}>
               {t.explore.sortTop}
-            </SortButton>
-            <SortButton
-              active={srt === "new"}
-              onClick={() => pushState(sel, "new", lng)}
-            >
+            </Chip>
+            <Chip variant="soft" pressed={srt === "new"} onClick={() => pushState(sel, "new", lng)}>
               {t.explore.sortNew}
-            </SortButton>
-          </div>
+            </Chip>
+          </FilterGroup>
 
           {/* Idioma hablado del video */}
-          <div className="flex items-center gap-1.5">
-            <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-faint">
-              {t.explore.languageLabel}
-            </span>
-            <SortButton
-              active={lng === null}
-              onClick={() => pushState(sel, srt, null)}
-            >
+          <FilterGroup label={t.explore.languageLabel}>
+            <Chip variant="soft" pressed={lng === null} onClick={() => pushState(sel, srt, null)}>
               {t.language.filterAll}
-            </SortButton>
-            <SortButton
-              active={lng === "es"}
-              onClick={() => pushState(sel, srt, "es")}
-            >
+            </Chip>
+            <Chip variant="soft" pressed={lng === "es"} onClick={() => pushState(sel, srt, "es")}>
               {t.language.videoEs}
-            </SortButton>
-            <SortButton
-              active={lng === "en"}
-              onClick={() => pushState(sel, srt, "en")}
-            >
+            </Chip>
+            <Chip variant="soft" pressed={lng === "en"} onClick={() => pushState(sel, srt, "en")}>
               {t.language.videoEn}
-            </SortButton>
-          </div>
+            </Chip>
+          </FilterGroup>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Chip
-            active={sel.length === 0}
-            onClick={() => pushState([], srt, lng)}
-          >
+        {/* En móvil cada grupo de chips va en una sola fila que se desliza de
+            lado (llega hasta el borde de la pantalla); desde `sm` los de
+            categoría se acomodan en varias líneas. */}
+        <div className="no-scrollbar -mx-4 -my-1 flex gap-2 overflow-x-auto px-4 py-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+          <Chip pressed={sel.length === 0} onClick={() => pushState([], srt, lng)}>
             {t.explore.allCategories}
           </Chip>
           {categories.map((c) => (
-            <Chip
-              key={c.id}
-              active={sel.includes(c.slug)}
-              onClick={() => toggle(c.slug)}
-            >
+            <Chip key={c.id} pressed={sel.includes(c.slug)} onClick={() => toggle(c.slug)}>
               {localizeCategory(c, t).name}
             </Chip>
           ))}
@@ -138,52 +114,17 @@ export function ExploreFilters({
   );
 }
 
-function SortButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition active:scale-95 ${
-        active
-          ? "bg-accent/15 text-accent-ink ring-1 ring-accent/40"
-          : "text-muted hover:bg-fill hover:text-foreground"
-      }`}
+    <div
+      role="group"
+      aria-label={label}
+      className="no-scrollbar -mx-4 -my-1 flex items-center gap-1.5 overflow-x-auto px-4 py-1 sm:mx-0 sm:overflow-visible sm:px-0"
     >
+      <span aria-hidden="true" className="mr-1 shrink-0 text-xs font-semibold uppercase tracking-wide text-faint">
+        {label}
+      </span>
       {children}
-    </button>
-  );
-}
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition active:scale-95 ${
-        active
-          ? "bg-accent text-on-accent"
-          : "bg-fill text-muted ring-1 ring-border hover:bg-fill-strong hover:text-foreground"
-      }`}
-    >
-      {children}
-    </button>
+    </div>
   );
 }

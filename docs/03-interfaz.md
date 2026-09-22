@@ -20,6 +20,11 @@
 En móvil las columnas se apilan (reproductor arriba). Rejilla:
 `lg:grid-cols-[minmax(0,1fr)_400px]`.
 
+> **Componentes base**: botones, cabeceras, tarjetas, campos, avisos… viven en
+> [`@/components/ui`](../src/components/ui) y siguen el diseño de la landing. Toda
+> página nueva debería armarse con ellos: ver
+> [10-componentes-ui.md](10-componentes-ui.md).
+
 ## Componentes ([`src/components/`](../src/components))
 
 | Componente | Rol |
@@ -231,11 +236,15 @@ de cada categoría.
   ignora y devuelve el acento para mantener la coherencia. La landing usa el degradado
   de la paleta completa (`--blend`) como firma.
 
-## Estilo glass y barra de scroll
+## Estilo glass, brillo de tarjetas y barra de scroll
 
 - Clase `.glass`: tinte sutil derivado del fondo + `backdrop-blur` + borde luminoso.
   Se usa en el header, el panel de la lista, la encuesta flotante y las tarjetas del
   admin. Adaptada a tokens para verse bien en claro y oscuro.
+- Clases `.glow-*`: el brillo de color de las tarjetas de temática, usado por
+  el componente `GlowCard` (ver [10-componentes-ui.md](10-componentes-ui.md)).
+- Clase `.no-scrollbar`: filas que se deslizan de lado sin barra visible (los
+  chips de filtros en móvil).
 - Clase `.custom-scroll`: barra de 10px con degradado claro y carril tenue, uniforme
   en las dos zonas con scroll propio (más visible que la nativa).
 

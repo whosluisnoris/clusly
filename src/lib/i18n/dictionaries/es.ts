@@ -181,7 +181,7 @@ export const es = {
   },
 
   resource: {
-    backTo: "← Volver a {target}",
+    backTo: "Volver a {target}",
     backAll: "Todo",
     voteHint: "¿Te sirvió? Vótalo para que más gente lo encuentre.",
     playlistMeta: "Playlist · {n} videos",
@@ -305,6 +305,7 @@ export const es = {
     statVotesHint: "recursos que has votado",
     statOpinions: "Opiniones",
     statOpinionsHint: "lo que nos has contado",
+    shortcutsLabel: "Atajos",
     shortcutSubmit: "+ Aportar video",
     shortcutSaved: "Ver guardados",
     shortcutOpinion: "Dejar una opinión",
@@ -319,7 +320,7 @@ export const es = {
       "Lo que vamos aprendiendo mientras construimos Clusly: cómo estudiar con criterio, novedades de la plataforma y hallazgos del catálogo.",
     empty: "Todavía no hay artículos publicados. Pronto escribimos el primero.",
     readingTime: "{n} min de lectura",
-    back: "← Volver al blog",
+    back: "Volver al blog",
     ctaTitle: "¿Conoces un video que debería estar en Clusly?",
     ctaButton: "+ Aportar video",
     notFound: "Artículo no encontrado",

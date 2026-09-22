@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, isStaff } from "@/lib/auth";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { Badge, Page, PageHeader } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -16,23 +17,23 @@ export default async function AdminPage() {
   if (!isStaff(user.role)) redirect("/");
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
+    <Page className="max-w-4xl">
+      <PageHeader
+        size="md"
+        title={
+          <>
             Panel <span className="text-accent-ink">Admin</span>
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            Organiza recursos de aprendizaje y los lives de Platzi
-          </p>
-        </div>
-        <span className="flex items-center gap-2 rounded-full bg-fill px-3 py-1 text-xs font-semibold text-muted ring-1 ring-border">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-          {user.displayName} · {user.role}
-        </span>
-      </div>
+          </>
+        }
+        description="Organiza recursos de aprendizaje y los lives de Platzi"
+        actions={
+          <Badge size="md" dot className="normal-case tracking-normal">
+            {user.displayName} · {user.role}
+          </Badge>
+        }
+      />
 
       <AdminDashboard />
-    </main>
+    </Page>
   );
 }

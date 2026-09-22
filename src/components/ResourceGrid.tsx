@@ -1,6 +1,7 @@
 import { ResourceCard } from "./ResourceCard";
 import type { ResourceRow } from "@/lib/types";
 import type { CategoryTag } from "@/lib/catalog";
+import { EmptyState } from "@/components/ui";
 
 // Cuadrícula de tarjetas de recurso, compartida por las páginas de categoría y la
 // de exploración. `userVotes` (resourceId → valor) y `canVote` alimentan el control
@@ -30,7 +31,7 @@ export function ResourceGrid({
   removeOnUnsave?: boolean;
 }) {
   if (resources.length === 0) {
-    return <p className="py-16 text-center text-sm text-faint">{empty}</p>;
+    return <EmptyState description={empty} />;
   }
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

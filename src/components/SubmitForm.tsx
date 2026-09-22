@@ -1,11 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LocaleLink } from "@/components/LocaleLink";
 import type { Category, ResourceLanguage } from "@/lib/types";
 import { CategoryMultiSelect } from "@/components/CategoryMultiSelect";
 import { getSessionId } from "@/lib/analytics";
 import { useT } from "@/components/I18nProvider";
+import {
+  Alert,
+  Button,
+  ButtonLink,
+  Card,
+  Chip,
+  Field,
+  Input,
+  TextLink,
+  textLinkClasses,
+} from "@/components/ui";
 
 type Result =
   | { kind: "success"; youtubeId?: string; warning?: string; pending?: boolean }
@@ -158,31 +168,25 @@ export function SubmitForm({
 
   if (step === "cuenta") {
     return (
-      <div className="glass backdrop-blur-md rounded-2xl p-5 sm:p-6">
-        <h2 className="text-base font-bold text-foreground">{t.submit.accountTitle}</h2>
-        <p className="mt-1.5 text-sm text-muted">{t.submit.accountBody}</p>
+      <Card padding="lg">
+        <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+          {t.submit.accountTitle}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{t.submit.accountBody}</p>
 
-        <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <LocaleLink
-            href="/registro?next=/enviar"
-            className="brand-gradient rounded-full px-5 py-2.5 text-center text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95"
-          >
-            {t.submit.accountSignUp}
-          </LocaleLink>
-          <LocaleLink
-            href="/entrar?next=/enviar"
-            className="rounded-full bg-fill px-5 py-2.5 text-center text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong"
-          >
+        <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">
+          <ButtonLink href="/registro?next=/enviar">{t.submit.accountSignUp}</ButtonLink>
+          <ButtonLink href="/entrar?next=/enviar" variant="secondary">
             {t.submit.accountSignIn}
-          </LocaleLink>
+          </ButtonLink>
         </div>
 
-        <div className="mt-5 border-t border-border pt-4">
+        <div className="mt-6 border-t border-border pt-5">
           <button
             type="button"
             onClick={publish}
             disabled={loading}
-            className="text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4 disabled:opacity-60"
+            className={textLinkClasses("accent", "text-sm")}
           >
             {loading ? t.common.sending : t.submit.accountAnon}
           </button>
@@ -192,144 +196,119 @@ export function SubmitForm({
         <button
           type="button"
           onClick={() => setStep("form")}
-          className="mt-4 text-xs text-muted transition hover:text-foreground"
+          className={textLinkClasses("muted", "mt-5 text-xs no-underline")}
         >
           {t.submit.keepEditing}
         </button>
 
         {result?.kind === "error" && (
-          <p className="mt-3 text-sm text-red-400">{result.message}</p>
+          <Alert tone="error" className="mt-4">
+            {result.message}
+          </Alert>
         )}
-      </div>
+      </Card>
     );
   }
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <label className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t.submit.urlLabel}
-          </span>
-          <input
+      <Card as="form" padding="lg" onSubmit={handleSubmit} className="flex flex-col gap-7">
+        <Field label={t.submit.urlLabel} hint={t.submit.urlHint}>
+          <Input
             type="url"
             required
             value={url}
             onChange={(e) => updateUrl(e.target.value)}
             placeholder="https://youtube.com/watch?v=…"
-            className="rounded-lg bg-surface px-4 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
-          <span className="text-xs text-faint">{t.submit.urlHint}</span>
-        </label>
+        </Field>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t.submit.categoriesLabel}
-          </span>
+        <Field group label={t.submit.categoriesLabel}>
           <CategoryMultiSelect
             categories={categories}
             selected={selected}
             onChange={updateCategories}
           />
-        </div>
+        </Field>
 
         {/* Idioma hablado del video: alimenta el filtro de la exploración */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {t.language.videoLabel}
-          </span>
+        <Field group label={t.language.videoLabel} hint={t.submit.languageHint}>
           <div className="flex gap-2">
             {(["es", "en"] as const).map((value) => (
-              <button
+              <Chip
                 key={value}
-                type="button"
+                pressed={language === value}
                 onClick={() => updateLanguage(value)}
-                aria-pressed={language === value}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition active:scale-95 ${
-                  language === value
-                    ? "bg-accent text-on-accent"
-                    : "bg-fill text-muted ring-1 ring-border hover:bg-fill-strong hover:text-foreground"
-                }`}
               >
                 {value === "es" ? t.language.videoEs : t.language.videoEn}
-              </button>
+              </Chip>
             ))}
           </div>
-          <span className="text-xs text-faint">{t.submit.languageHint}</span>
-        </div>
+        </Field>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <button
+        <div className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:gap-4">
+          <Button
             type="submit"
-            disabled={loading || !url.trim()}
-            className="brand-gradient rounded-full px-6 py-3 text-sm font-bold text-on-accent shadow-lg shadow-black/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            size="lg"
+            disabled={!url.trim()}
+            loading={loading}
+            loadingText={t.submit.submitting}
           >
-            {loading ? t.submit.submitting : t.submit.submitButton}
-          </button>
+            {t.submit.submitButton}
+          </Button>
           {!loggedIn && (
             <span className="text-xs text-muted">{t.submit.guestHint}</span>
           )}
         </div>
-      </form>
+      </Card>
 
       {result && (
         <div className="mt-6">
-          {result.kind === "success" && (
-            <div className="rounded-xl bg-accent/10 p-4 ring-1 ring-accent/25">
-              {result.pending ? (
-                <>
-                  <p className="text-sm font-semibold text-foreground">
-                    {t.submit.pendingTitle}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">{t.submit.pendingBody}</p>
-                  <LocaleLink
-                    href="/registro?next=/enviar"
-                    className="mt-2 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-                  >
+          {result.kind === "success" &&
+            (result.pending ? (
+              <Alert
+                tone="success"
+                title={t.submit.pendingTitle}
+                action={
+                  <TextLink href="/registro?next=/enviar" className="text-sm">
                     {t.submit.pendingCta}
-                  </LocaleLink>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-semibold text-foreground">
-                    {t.submit.successTitle}
-                  </p>
-                  {result.warning && (
-                    <p className="mt-1 text-xs text-muted">{result.warning}</p>
-                  )}
-                  {result.youtubeId && (
-                    <LocaleLink
-                      href={`/recurso/${result.youtubeId}`}
-                      className="mt-2 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-                    >
+                  </TextLink>
+                }
+              >
+                {t.submit.pendingBody}
+              </Alert>
+            ) : (
+              <Alert
+                tone="success"
+                title={t.submit.successTitle}
+                action={
+                  result.youtubeId && (
+                    <TextLink href={`/recurso/${result.youtubeId}`} className="text-sm">
                       {t.submit.successLink}
-                    </LocaleLink>
-                  )}
-                </>
-              )}
-            </div>
-          )}
+                    </TextLink>
+                  )
+                }
+              >
+                {result.warning}
+              </Alert>
+            ))}
 
           {result.kind === "duplicate" && (
-            <div className="rounded-xl bg-fill p-4 ring-1 ring-border">
-              <p className="text-sm font-semibold text-foreground">
-                {t.submit.duplicateTitle}
-              </p>
-              <p className="mt-1 text-xs text-muted">{t.submit.duplicateBody}</p>
-              {result.youtubeId && (
-                <LocaleLink
-                  href={`/recurso/${result.youtubeId}`}
-                  className="mt-2 inline-block text-sm font-semibold text-accent-ink underline decoration-2 underline-offset-4"
-                >
-                  {t.submit.duplicateLink}
-                </LocaleLink>
-              )}
-            </div>
+            <Alert
+              title={t.submit.duplicateTitle}
+              action={
+                result.youtubeId && (
+                  <TextLink href={`/recurso/${result.youtubeId}`} className="text-sm">
+                    {t.submit.duplicateLink}
+                  </TextLink>
+                )
+              }
+            >
+              {t.submit.duplicateBody}
+            </Alert>
           )}
 
-          {result.kind === "error" && (
-            <p className="text-sm text-red-400">{result.message}</p>
-          )}
+          {result.kind === "error" && <Alert tone="error">{result.message}</Alert>}
         </div>
       )}
     </div>

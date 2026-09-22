@@ -1,5 +1,5 @@
-import { LocaleLink } from "@/components/LocaleLink";
 import type { Dictionary } from "@/lib/i18n";
+import { ButtonLink, cn, containerClasses } from "@/components/ui";
 
 // Cómo aportar un video, en una franja compacta: título, cuatro pasos de una
 // línea y un botón. Es el único sitio de la landing con números, porque es el
@@ -13,7 +13,7 @@ export function HowToAddVideo({ t }: { t: Dictionary }) {
   ];
 
   return (
-    <section className="mx-auto w-full max-w-[1500px] px-4 pt-12 sm:px-8 sm:pt-20">
+    <section className={cn(containerClasses(), "pt-12 sm:pt-20")}>
       <div className="grid gap-6 border-y border-border py-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:items-center lg:gap-16">
         <div className="flex flex-col items-start">
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
@@ -22,12 +22,9 @@ export function HowToAddVideo({ t }: { t: Dictionary }) {
           <p className="mt-2 text-[15px] text-muted sm:mt-2.5 sm:text-base">
             {t.landing.howToSubtitle}
           </p>
-          <LocaleLink
-            href="/enviar"
-            className="mt-6 hidden h-[46px] items-center rounded-full px-[22px] text-[15px] font-bold text-foreground ring-1 ring-border-strong transition hover:bg-fill lg:inline-flex"
-          >
+          <ButtonLink href="/enviar" variant="secondary" className="mt-6 hidden lg:inline-flex">
             {t.landing.howToCta}
-          </LocaleLink>
+          </ButtonLink>
         </div>
 
         <ol className="flex flex-col gap-3.5 sm:grid sm:grid-cols-4 sm:gap-0">
@@ -48,12 +45,9 @@ export function HowToAddVideo({ t }: { t: Dictionary }) {
           ))}
         </ol>
 
-        <LocaleLink
-          href="/enviar"
-          className="flex h-12 items-center justify-center rounded-full text-[15px] font-bold text-foreground ring-1 ring-border-strong transition hover:bg-fill lg:hidden"
-        >
+        <ButtonLink href="/enviar" variant="secondary" block className="lg:hidden">
           {t.landing.howToCta}
-        </LocaleLink>
+        </ButtonLink>
       </div>
     </section>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LocaleLink } from "@/components/LocaleLink";
 import { useT } from "@/components/I18nProvider";
 import type { SessionUser } from "@/lib/auth";
+import { Avatar, ButtonLink, Card } from "@/components/ui";
 
 // Controles de sesión para la barra de navegación. Sin sesión: enlaces de entrar
 // y registro. Con sesión: botón para aportar video + menú con "Mis videos" y salir.
@@ -25,38 +26,24 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
     return (
       <div className="flex shrink-0 items-center gap-1.5">
         {/* Aportar está abierto sin cuenta: la sesión se pide al confirmar */}
-        <LocaleLink
-          href="/enviar"
-          className="hidden rounded-full bg-fill px-3.5 py-2 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong sm:inline-block"
-        >
+        <ButtonLink href="/enviar" variant="soft" size="sm" className="hidden px-3.5 sm:inline-flex">
           {t.nav.submit}
-        </LocaleLink>
-        <LocaleLink
-          href="/entrar"
-          className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:text-foreground sm:inline-block"
-        >
+        </ButtonLink>
+        <ButtonLink href="/entrar" variant="ghost" size="sm" className="hidden px-3 sm:inline-flex">
           {t.nav.signIn}
-        </LocaleLink>
-        <LocaleLink
-          href="/registro"
-          className="rounded-full bg-foreground px-4 py-2 text-sm font-bold text-background transition hover:opacity-90 active:scale-95"
-        >
+        </ButtonLink>
+        <ButtonLink href="/registro" variant="contrast" size="sm">
           {t.nav.signUp}
-        </LocaleLink>
+        </ButtonLink>
       </div>
     );
   }
 
-  const initial = user.displayName.charAt(0).toUpperCase();
-
   return (
     <div className="flex shrink-0 items-center gap-2">
-      <LocaleLink
-        href="/enviar"
-        className="hidden rounded-full bg-fill px-3.5 py-2 text-sm font-semibold text-foreground ring-1 ring-border transition hover:bg-fill-strong sm:inline-block"
-      >
+      <ButtonLink href="/enviar" variant="soft" size="sm" className="hidden px-3.5 sm:inline-flex">
         {t.nav.submit}
-      </LocaleLink>
+      </ButtonLink>
 
       <div className="relative">
         <button
@@ -64,10 +51,11 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={open}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 text-sm font-bold text-accent-ink ring-1 ring-accent/30 transition hover:bg-accent/25"
+          aria-label={user.displayName}
           title={user.displayName}
+          className="rounded-full transition hover:brightness-125 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-95"
         >
-          {initial}
+          <Avatar name={user.displayName} />
         </button>
 
         {open && (
@@ -79,9 +67,11 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
               onClick={() => setOpen(false)}
               className="fixed inset-0 z-40 cursor-default"
             />
-            <div
+            <Card
               role="menu"
-              className="glass absolute right-0 z-50 mt-2 w-52 rounded-xl p-1.5 shadow-xl backdrop-blur-md"
+              variant="glass"
+              padding="none"
+              className="absolute right-0 z-50 mt-2 w-56 rounded-xl p-1.5 shadow-xl"
             >
               <div className="truncate px-3 py-2 text-xs text-faint">{user.email}</div>
               <MenuLink href="/perfil" onClick={() => setOpen(false)}>
@@ -105,7 +95,7 @@ export function AuthNav({ user }: { user: SessionUser | null }) {
               >
                 {loggingOut ? t.nav.signingOut : t.nav.signOut}
               </button>
-            </div>
+            </Card>
           </>
         )}
       </div>

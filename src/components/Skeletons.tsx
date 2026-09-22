@@ -81,3 +81,42 @@ export function ArticlePageSkeleton() {
     </main>
   );
 }
+
+// La landing: hero (título, texto, botón) y la cuadrícula de temáticas.
+export function HomePageSkeleton() {
+  return (
+    <div aria-busy="true" className="flex-1">
+      <section className="mx-auto grid w-full max-w-[1500px] items-center gap-10 px-4 pb-4 pt-10 sm:px-8 sm:pt-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-20 lg:pb-16 lg:pt-24">
+        <div className="flex flex-col">
+          <Block className="h-12 w-full sm:h-16" />
+          <Block className="mt-3 h-12 w-3/4 sm:h-16" />
+          <Block className="mt-6 h-5 w-full max-w-md" />
+          <Block className="mt-2 h-5 w-2/3 max-w-md" />
+          <Block className="mt-8 h-13 w-56 rounded-full" />
+        </div>
+        <Block className="hidden h-80 w-full rounded-2xl lg:block" />
+      </section>
+      <section className="mx-auto w-full max-w-[1500px] px-4 pt-12 sm:px-8 lg:pt-4">
+        <Block className="mb-6 h-8 w-48" />
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-6">
+          {Array.from({ length: 12 }, (_, i) => (
+            <Block key={i} className="h-16 rounded-xl sm:h-32 sm:rounded-2xl" />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// Formularios de acceso (entrar / registro), dentro de la tarjeta del layout.
+export function FormSkeleton() {
+  return (
+    <div aria-busy="true" className="flex flex-col gap-4">
+      <Block className="h-8 w-40" />
+      <Block className="h-4 w-64 max-w-full" />
+      <Block className="mt-2 h-11 w-full" />
+      <Block className="h-11 w-full" />
+      <Block className="mt-2 h-11 w-full rounded-full" />
+    </div>
+  );
+}

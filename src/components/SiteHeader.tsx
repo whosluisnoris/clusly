@@ -26,9 +26,10 @@ export function SiteHeader({
 
         <LocaleLink
           href="/"
-          className="font-display shrink-0 text-lg font-black tracking-tight brand-text"
+          className="font-display shrink-0 text-xl font-extrabold tracking-tight text-foreground"
         >
           {SITE_NAME}
+          <span className="text-accent">.</span>
         </LocaleLink>
 
         {/* Enlaces solo en escritorio; en móvil viven en el menú lateral */}

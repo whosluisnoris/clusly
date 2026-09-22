@@ -8,6 +8,12 @@ export function catColor(_color: string | null | undefined): string {
   return "var(--accent)";
 }
 
+// Color propio de cada temática (definido por tema en globals.css), por slug.
+// Una temática nueva sin color asignado cae al acento.
+export function topicColor(slug: string): string {
+  return `var(--topic-${slug}, var(--accent))`;
+}
+
 // Luminancia relativa aproximada (sRGB) para decidir texto legible encima.
 function luminance(hex: string): number {
   const m = /^#?([0-9a-fA-F]{6})$/.exec(hex);

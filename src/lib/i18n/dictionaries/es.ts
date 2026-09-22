@@ -71,41 +71,29 @@ export const es = {
   },
 
   landing: {
-    eyebrow: "Aprende tecnología, sin perderte",
     titleLead: "En un mundo infinito de videos,",
     titleAccent: "tu ruta empieza aquí.",
-    subtitle:
-      "{site} reúne lo mejor de YouTube para aprender tecnología, gratis y en tu idioma, y lo convierte en rutas claras para que avances paso a paso en vez de perderte en el scroll.",
+    subtitle: "Lo mejor de YouTube para aprender tecnología. Gratis, en tu idioma y en orden.",
     ctaPrimary: "Empieza tu ruta",
     ctaSecondary: "o mira los Platzi Lives",
-    principle1Title: "Curado por área",
-    principle1Text:
-      "Cada recurso vive en su temática. Nada de buscar a ciegas entre resultados infinitos.",
-    principle2Title: "Gratis y en tu idioma",
-    principle2Text:
-      "Solo contenido de calidad, gratuito y en el idioma que elijas, reunido en un mismo lugar.",
-    principle3Title: "Camino paso a paso",
-    principle3Text:
-      "Playlists curadas y en orden, listas para seguirlas de principio a fin sin perderte entre mil pestañas.",
+    // Tres ideas cortas bajo el CTA (con ✓, sin numerar: no son una secuencia).
+    claim1: "Curado por área",
+    claim2: "Gratis y en tu idioma",
+    claim3: "Paso a paso",
+    // Tarjeta ilustrativa del hero: una ruta a medio recorrer.
+    routeSample: "ruta de ejemplo",
+    routeProgress: "{done} de {total}",
+    routeNext: "Siguiente",
     topicsTitle: "Explora por temática",
     seeAll: "Ver todo →",
     resourceCount: { one: "{n} recurso", other: "{n} recursos" },
-    howToEyebrow: "Aporta a la comunidad",
-    howToTitle: "Cómo agregar un video",
-    howToSubtitle:
-      "El catálogo lo llena la gente que aprende aquí. Si un video te sirvió, súbelo: son cuatro pasos y no llega al minuto.",
-    howToStep1Title: "Copia el enlace en YouTube",
-    howToStep1Text:
-      "Sirve un video suelto o una playlist completa. Con el enlace basta: el título, la miniatura y la duración los sacamos nosotros.",
-    howToStep2Title: "Pégalo en Clusly",
-    howToStep2Text:
-      "Abre «Aportar video» y pega el enlace. Si alguien ya lo subió te avisamos ahí mismo y te llevamos al que ya está.",
-    howToStep3Title: "Elige temáticas e idioma",
-    howToStep3Text:
-      "Marca las categorías donde encaja y en qué idioma está hablado. Es lo que hace que otra persona lo encuentre cuando le haga falta.",
-    howToStep4Title: "Publica y deja que la comunidad vote",
-    howToStep4Text:
-      "Con tu cuenta aparece al instante en el catálogo; sin ella queda pendiente de revisión. De ahí en adelante, los votos lo hacen subir.",
+    howToTitle: "¿Un video te sirvió? Súbelo.",
+    howToSubtitle: "Cuatro pasos, menos de un minuto.",
+    howToStep1: "Copia el enlace de YouTube",
+    howToStep2: "Pégalo en Clusly",
+    howToStep3: "Elige temática e idioma",
+    howToStep4: "Publica y la comunidad vota",
+    howToCta: "Aportar video",
   },
 
   // Nombre y descripción de cada temática, por slug. El catálogo vive en la

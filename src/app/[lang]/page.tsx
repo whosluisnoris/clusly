@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { HowToAddVideo } from "@/components/HowToAddVideo";
+import { RoutePreview } from "@/components/RoutePreview";
 import { topicColor } from "@/lib/color";
 import {
   getDictionary,
@@ -13,7 +14,6 @@ import {
   plural,
   localizeCategory,
   DEFAULT_LOCALE,
-  type Dictionary,
 } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -82,7 +82,15 @@ export default async function LandingPage({
           </ul>
         </div>
 
-        <RoutePreview t={t} topicName={webName} />
+        <RoutePreview
+          topicName={webName}
+          sampleLabel={t.landing.routeSample}
+          nextLabel={t.landing.routeNext}
+          progressLabels={[0, 1, 2, 3, 4].map((done) =>
+            fmt(t.landing.routeProgress, { done, total: 4 })
+          )}
+          color={topicColor("web")}
+        />
       </section>
 
       {/* Temáticas: justo después del hero, que es a lo que viene quien llega.
@@ -145,112 +153,6 @@ export default async function LandingPage({
 
       <div className="flex-1" />
       <SiteFooter lang={uiLang} />
-    </div>
-  );
-}
-
-// Tarjeta ilustrativa del hero: una ruta que se completa video a video. No son
-// videos reales (por eso los renglones grises y la etiqueta de "ejemplo"):
-// enseña la idea de avanzar en orden sin gastar un párrafo en explicarla.
-//
-// La animación es CSS puro (`.route-*` en globals.css). El marcado pinta el
-// estado quieto, 2 de 4, que es lo que se ve con "reducir movimiento".
-const ROUTE_ROWS = ["78%", "64%", "82%", "58%"];
-const ROUTE_STILL = 2;
-
-function RoutePreview({ t, topicName }: { t: Dictionary; topicName: string }) {
-  const total = ROUTE_ROWS.length;
-
-  return (
-    <div
-      aria-hidden="true"
-      className="flex flex-col gap-3 rounded-[18px] bg-surface p-4 ring-1 ring-border sm:gap-4 sm:rounded-[20px] sm:p-6"
-      style={{ ["--line" as string]: topicColor("web") }}
-    >
-      <div className="flex items-center gap-2.5">
-        <span className="hidden sm:block" style={{ color: "var(--line)" }}>
-          <CategoryIcon slug="web" className="h-5 w-5" />
-        </span>
-        <span className="font-display flex-1 text-base font-bold text-foreground sm:text-lg">
-          {topicName} · {t.landing.routeSample}
-        </span>
-        {/* Una etiqueta por paso, apiladas: la animación enseña la del paso actual */}
-        <span className="inline-grid text-right text-[13px] tabular-nums text-muted">
-          {Array.from({ length: total + 1 }, (_, k) => (
-            <span
-              key={k}
-              className={`route-label l${k} [grid-area:1/1]`}
-              style={{ opacity: k === ROUTE_STILL ? 1 : 0 }}
-            >
-              {fmt(t.landing.routeProgress, { done: k, total })}
-            </span>
-          ))}
-        </span>
-      </div>
-
-      <div className="h-1 overflow-hidden rounded-full bg-fill-strong">
-        <div
-          className="route-bar h-1 w-full"
-          style={{ transform: `scaleX(${ROUTE_STILL / total})`, backgroundColor: "var(--line)" }}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        {ROUTE_ROWS.map((w, i) => {
-          const done = i < ROUTE_STILL;
-          const next = i === ROUTE_STILL;
-          return (
-            <div
-              key={i}
-              className={`route-row i${i} flex items-center gap-3 rounded-xl p-2 sm:gap-3.5 sm:p-2.5`}
-              style={{
-                backgroundColor: next ? "var(--fill)" : "transparent",
-                boxShadow: `inset 0 0 0 1px ${next ? "var(--border)" : "transparent"}`,
-              }}
-            >
-              <span className="grid h-[42px] w-[72px] shrink-0 place-items-center rounded-md bg-surface-2 sm:h-[54px] sm:w-24 sm:rounded-lg">
-                <svg
-                  viewBox="0 0 24 24"
-                  className={`route-play i${i} h-4 w-4 fill-current`}
-                  style={{ color: next ? "var(--accent)" : "var(--faint)" }}
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-              <span
-                className={`route-text i${i} flex flex-1 flex-col gap-2`}
-                style={{ opacity: done ? 0.55 : 1 }}
-              >
-                <span className="block h-2.5 rounded-full bg-border-strong" style={{ width: w }} />
-                <span className="block h-2 w-[36%] rounded-full bg-border" />
-              </span>
-              {/* ✓ y "Siguiente" comparten hueco: la animación alterna cuál se ve */}
-              <span className="relative h-7 w-[84px] shrink-0">
-                <span
-                  className={`route-check i${i} absolute right-0 top-0 grid h-7 w-7 place-items-center rounded-full`}
-                  style={{
-                    color: "var(--line)",
-                    backgroundColor: "color-mix(in srgb, var(--line) 16%, transparent)",
-                    opacity: done ? 1 : 0,
-                    transform: `scale(${done ? 1 : 0.4})`,
-                  }}
-                >
-                  <CheckIcon className="h-3.5 w-3.5" />
-                </span>
-                <span
-                  className={`route-next i${i} absolute right-0 top-0 flex h-7 items-center rounded-full bg-accent px-3 text-xs font-bold text-on-accent`}
-                  style={{
-                    opacity: next ? 1 : 0,
-                    transform: `translateY(${next ? 0 : 6}px)`,
-                  }}
-                >
-                  {t.landing.routeNext}
-                </span>
-              </span>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

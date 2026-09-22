@@ -10,6 +10,9 @@ const ROWS = ["78%", "64%", "82%", "58%"];
 const STEP_MS = 1500;
 const DONE_MS = 2600;
 
+// Cuánto dura la "pulsación" de "Siguiente" justo antes de avanzar.
+const PRESS_MS = 220;
+
 // Paso con el que llega el HTML del servidor, antes de que arranque el ciclo.
 const INITIAL_STEP = 2;
 
@@ -25,9 +28,13 @@ const INITIAL_STEP = 2;
 // `scale` y `translate`, no `transform`, así que son esas las que se listan
 // en cada `transition-[…]`; con `transform` saltarían de golpe.
 //
+// Cada avance: "Siguiente" se hunde un instante (como una pulsación), la fila
+// se completa y su ✓ entra con un "pop" (`.route-pop` en globals.css: crece
+// de más, rebota y suelta un anillo que se desvanece).
+//
 // Con "reducir movimiento" la ruta sigue avanzando con sus fundidos y la barra
-// llenándose; solo se quitan el rebote del ✓ y el desplazamiento de
-// "Siguiente". El ciclo se para mientras la tarjeta no está en pantalla o la
+// llenándose; solo se quitan la pulsación, el pop, el rebote y el
+// desplazamiento. El ciclo se para mientras la tarjeta no está en pantalla o la
 // pestaña está oculta.
 export function RoutePreview({
   topicName,
@@ -45,6 +52,8 @@ export function RoutePreview({
 }) {
   const total = ROWS.length;
   const [step, setStep] = useState(INITIAL_STEP);
+  // "Siguiente" se hunde un instante antes de cada avance, como si se pulsara.
+  const [pressing, setPressing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,15 +66,31 @@ export function RoutePreview({
     let visible = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const stop = () => clearTimeout(timer);
-    const run = () => {
-      stop();
-      if (!visible || document.hidden) return;
-      timer = setTimeout(() => {
-        current = current >= total ? 0 : current + 1;
+    const stop = () => {
+      clearTimeout(timer);
+      setPressing(false);
+    };
+    // Con la ruta completa, vuelve a empezar; si no, pulsa "Siguiente" y,
+    // al soltarlo, avanza un paso.
+    const tick = () => {
+      if (current >= total) {
+        current = 0;
         setStep(current);
         run();
-      }, current >= total ? DONE_MS : STEP_MS);
+        return;
+      }
+      setPressing(true);
+      timer = setTimeout(() => {
+        setPressing(false);
+        current += 1;
+        setStep(current);
+        run();
+      }, PRESS_MS);
+    };
+    const run = () => {
+      clearTimeout(timer);
+      if (!visible || document.hidden) return stop();
+      timer = setTimeout(tick, current >= total ? DONE_MS : STEP_MS - PRESS_MS);
     };
 
     const observer = new IntersectionObserver(([entry]) => {
@@ -110,6 +135,8 @@ export function RoutePreview({
         {ROWS.map((w, i) => {
           const done = i < step;
           const next = i === step;
+          // La fila recién completada: su ✓ entra con el "pop".
+          const justDone = i === step - 1;
           return (
             <div
               key={i}
@@ -140,7 +167,7 @@ export function RoutePreview({
                 <span
                   className={`absolute right-0 top-0 grid h-7 w-7 place-items-center rounded-full transition-[opacity,scale] duration-[450ms,600ms] ease-[ease,cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:scale-100 ${
                     done ? "scale-100 opacity-100" : "scale-40 opacity-0"
-                  }`}
+                  } ${justDone ? "route-pop" : ""}`}
                   style={{
                     color: "var(--line)",
                     backgroundColor: "color-mix(in srgb, var(--line) 16%, transparent)",
@@ -159,9 +186,9 @@ export function RoutePreview({
                   </svg>
                 </span>
                 <span
-                  className={`absolute right-0 top-0 flex h-7 items-center rounded-full bg-accent px-3 text-xs font-bold text-on-accent transition-[opacity,translate] duration-[450ms,600ms] ease-[ease,cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:translate-y-0 ${
+                  className={`absolute right-0 top-0 flex h-7 items-center rounded-full bg-accent px-3 text-xs font-bold text-on-accent transition-[opacity,translate,scale,filter] duration-[450ms,600ms,150ms,150ms] ease-[ease,cubic-bezier(0.34,1.56,0.64,1),ease-out,ease-out] motion-reduce:translate-y-0 motion-reduce:scale-100 ${
                     next ? "translate-y-0 opacity-100" : "translate-y-1.5 opacity-0"
-                  }`}
+                  } ${next && pressing ? "scale-90 brightness-90" : "scale-100"}`}
                 >
                   {nextLabel}
                 </span>

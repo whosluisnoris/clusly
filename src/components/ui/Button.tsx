@@ -2,8 +2,8 @@ import type { ComponentProps, ReactNode } from "react";
 import { LocaleLink } from "@/components/LocaleLink";
 import { cn } from "./cn";
 
-export type ButtonVariant = "primary" | "secondary" | "soft" | "contrast" | "ghost";
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "soft" | "contrast" | "ghost" | "danger";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 // Variantes (de más a menos peso):
 // - primary:   relleno naranja. La acción principal; idealmente una por pantalla.
@@ -12,15 +12,20 @@ export type ButtonSize = "sm" | "md" | "lg";
 // - secondary: contorno. La acción alternativa ("Aportar un video" en la landing).
 // - soft:      fondo tenue. Acciones de apoyo y atajos.
 // - ghost:     solo texto; el fondo aparece al pasar el cursor.
+// - danger:    contorno rojo. Acciones destructivas (borrar, quitar); siempre
+//              detrás de una confirmación.
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-accent text-on-accent hover:brightness-110",
   contrast: "bg-foreground text-background hover:opacity-90",
   secondary: "text-foreground ring-1 ring-inset ring-border-strong hover:bg-fill",
   soft: "bg-fill text-foreground ring-1 ring-inset ring-border hover:bg-fill-strong",
   ghost: "text-muted hover:bg-fill hover:text-foreground",
+  danger: "text-danger-ink ring-1 ring-inset ring-danger/40 hover:bg-danger/10",
 };
 
+// `xs` es para acciones dentro de filas de una lista (paneles de admin).
 const SIZES: Record<ButtonSize, string> = {
+  xs: "h-8 gap-1 px-3 text-xs",
   sm: "h-9 gap-1.5 px-4 text-sm",
   md: "h-11 gap-2 px-5 text-[15px]",
   lg: "h-13 gap-2.5 px-7 text-base",

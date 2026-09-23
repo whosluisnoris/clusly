@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { formatDate, timeAgo } from "@/lib/dates";
 import { DailyChart } from "@/components/DailyChart";
+import { Alert, Button, Card, EmptyState, SectionHeader } from "@/components/ui";
 
 // Paleta categórica validada (validate_palette.js, superficie #0e1013)
 const EVENT_SERIES = [
@@ -94,40 +95,32 @@ export function StatsPanel() {
   }, [loadStats]);
 
   return (
-    <section>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">
-          Estadísticas <span className="text-accent-ink">de reproducción</span>
-        </h2>
-        <button
-          onClick={loadStats}
-          className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs font-medium text-accent-ink hover:bg-accent/10 transition"
-        >
-          Actualizar
-        </button>
-      </div>
+    <section className="flex flex-col">
+      <SectionHeader
+        title="Estadísticas de reproducción"
+        action={
+          <Button variant="secondary" size="sm" onClick={loadStats}>
+            Actualizar
+          </Button>
+        }
+      />
 
       {/* Gráfica de actividad diaria */}
-      <div className="glass backdrop-blur-md mb-8 rounded-2xl p-5">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">
-          Actividad de los últimos 14 días
-        </h3>
+      <Card className="mb-6">
+        <SectionHeader size="sm" as="h3" title="Actividad de los últimos 14 días" />
         <DailyChart
           data={daily}
           series={EVENT_SERIES}
           tooltipExtra={(row) => `Sesiones únicas: ${Number(row.sessions ?? 0)}`}
         />
-      </div>
+      </Card>
 
       {stats.length === 0 ? (
-        <p className="text-sm text-muted">
-          Todavía no hay eventos registrados. Cuando alguien reproduzca un video,
-          aparecerá aquí.
-        </p>
+        <EmptyState description="Todavía no hay eventos registrados. Cuando alguien reproduzca un video, aparecerá aquí." />
       ) : (
-        <div className="overflow-x-auto rounded-lg ring-1 ring-border">
+        <div className="custom-scroll overflow-x-auto rounded-2xl bg-surface ring-1 ring-border">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-surface text-xs uppercase tracking-wide text-muted">
+            <thead className="border-b border-border text-xs font-bold uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-4 py-3">Video</th>
                 <th className="px-3 py-3 text-right" title="Clics para reproducir aquí">Reproducciones</th>
@@ -143,10 +136,10 @@ export function StatsPanel() {
                   <td className="max-w-[280px] truncate px-4 py-3 text-foreground" title={r.title}>
                     {r.title}
                   </td>
-                  <td className="px-3 py-3 text-right font-semibold text-accent-ink">{r.plays}</td>
-                  <td className="px-3 py-3 text-right text-muted">{r.autoplays}</td>
-                  <td className="px-3 py-3 text-right text-muted">{r.youtubeOpens}</td>
-                  <td className="px-3 py-3 text-right text-muted">{r.uniqueSessions}</td>
+                  <td className="px-3 py-3 text-right font-semibold tabular-nums text-accent-ink">{r.plays}</td>
+                  <td className="px-3 py-3 text-right tabular-nums text-muted">{r.autoplays}</td>
+                  <td className="px-3 py-3 text-right tabular-nums text-muted">{r.youtubeOpens}</td>
+                  <td className="px-3 py-3 text-right tabular-nums text-muted">{r.uniqueSessions}</td>
                   <td className="px-4 py-3 text-right text-xs text-muted">
                     {r.lastActivity ? timeAgo(r.lastActivity) : "—"}
                   </td>
@@ -158,11 +151,9 @@ export function StatsPanel() {
       )}
 
       {/* Visitas (Vercel Web Analytics) */}
-      <h2 className="mb-4 mt-14 text-lg font-bold text-foreground">
-        Visitas <span className="text-accent-ink">(Vercel Web Analytics)</span>
-      </h2>
+      <SectionHeader className="mt-14" title="Visitas (Vercel Web Analytics)" />
       {!visits || !visits.configured ? (
-        <div className="glass backdrop-blur-md max-w-2xl rounded-2xl p-5 text-sm text-muted">
+        <Card className="max-w-2xl text-sm leading-relaxed text-muted">
           <p className="mb-3">
             Vercel sí permite consultar las visitas por API, pero requiere una
             configuración única desde tu cuenta:
@@ -187,35 +178,29 @@ export function StatsPanel() {
             automáticamente. Mientras tanto, la actividad de arriba (medida por
             la propia plataforma) ya refleja las visitas con reproductor.
           </p>
-        </div>
+        </Card>
       ) : visits.error ? (
-        <p className="text-sm text-red-400">
-          Configurado, pero Vercel respondió con error: {visits.error}
-        </p>
+        <Alert tone="error">Configurado, pero Vercel respondió con error: {visits.error}</Alert>
       ) : (
-        <div className="glass backdrop-blur-md mb-8 rounded-2xl p-5">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">
-            Vistas de página de los últimos 14 días
-          </h3>
+        <Card>
+          <SectionHeader size="sm" as="h3" title="Vistas de página de los últimos 14 días" />
           <DailyChart
             data={(visits.daily ?? []) as unknown as Record<string, string | number>[]}
             series={VISIT_SERIES}
             tooltipExtra={(row) => `Visitantes únicos: ${Number(row.visitors ?? 0)}`}
           />
-        </div>
+        </Card>
       )}
 
       {/* Encuesta */}
-      <h2 className="mb-4 mt-14 text-lg font-bold text-foreground">
-        Encuesta <span className="text-accent-ink">de la plataforma</span>
-      </h2>
-      <p className="mb-3 text-sm text-muted">
+      <SectionHeader className="mt-14" title="Encuesta de la plataforma" />
+      <p className="-mt-2 mb-4 text-sm text-muted">
         &ldquo;¿Te gustaría tener una funcionalidad así en Platzi?&rdquo;
       </p>
       {!poll || poll.total === 0 ? (
-        <p className="text-sm text-muted">Todavía no hay votos.</p>
+        <EmptyState description="Todavía no hay votos." />
       ) : (
-        <div className="flex max-w-md flex-col gap-2 rounded-lg bg-surface p-4 ring-1 ring-border">
+        <Card className="flex max-w-lg flex-col gap-3">
           {POLL_LABELS.map(({ key, label }) => {
             const count = poll.counts[key] ?? 0;
             const pct = poll.total > 0 ? Math.round((count / poll.total) * 100) : 0;
@@ -225,7 +210,7 @@ export function StatsPanel() {
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-fill">
                   <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="w-16 shrink-0 text-right text-muted">
+                <span className="w-16 shrink-0 text-right tabular-nums text-muted">
                   {count} · {pct}%
                 </span>
               </div>
@@ -234,19 +219,22 @@ export function StatsPanel() {
           <p className="mt-1 text-xs text-faint">
             {poll.total} {poll.total === 1 ? "voto" : "votos"} en total
           </p>
-        </div>
+        </Card>
       )}
 
       {/* Comentarios de la encuesta */}
-      <h3 className="mb-3 mt-8 text-sm font-semibold text-foreground">
-        Comentarios <span className="text-faint">({comments.length})</span>
-      </h3>
+      <SectionHeader
+        size="sm"
+        as="h3"
+        className="mt-10"
+        title={`Comentarios (${comments.length})`}
+      />
       {comments.length === 0 ? (
-        <p className="mb-8 text-sm text-muted">Todavía no hay comentarios.</p>
+        <p className="text-sm text-muted">Todavía no hay comentarios.</p>
       ) : (
-        <ul className="mb-8 flex max-w-2xl flex-col gap-3">
+        <ul className="flex max-w-2xl flex-col gap-3">
           {comments.map((c, i) => (
-            <li key={`${c.createdAt}-${i}`} className="glass backdrop-blur-md rounded-xl p-4">
+            <Card as="li" padding="sm" key={`${c.createdAt}-${i}`}>
               <p className="whitespace-pre-wrap break-words text-sm text-foreground">
                 {c.comment}
               </p>
@@ -255,7 +243,7 @@ export function StatsPanel() {
                 {POLL_LABELS.find((l) => l.key === c.answer)?.label.replace(/^\S+ /, "") ?? c.answer}
                 &rdquo; · {timeAgo(c.createdAt) ?? formatDate(c.createdAt)}
               </p>
-            </li>
+            </Card>
           ))}
         </ul>
       )}

@@ -2,6 +2,21 @@
 
 import { useState, useCallback, useEffect } from "react";
 import type { Category } from "@/lib/types";
+import { topicColor } from "@/lib/color";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import {
+  Alert,
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  Field,
+  IconTile,
+  Input,
+  SectionHeader,
+  cn,
+  inputClasses,
+} from "@/components/ui";
 
 // Genera un slug kebab-case a partir del nombre (sin acentos ni símbolos).
 function slugify(name: string): string {
@@ -120,18 +135,16 @@ export function CategoriesManager({
   }
 
   return (
-    <section className="mb-10">
-      <h2 className="mb-4 text-lg font-bold text-foreground">
-        Categorías <span className="text-accent-ink">del catálogo</span>
-      </h2>
+    <section>
+      <SectionHeader title="Categorías del catálogo" />
 
-      <form
+      <Card
+        as="form"
         onSubmit={handleCreate}
-        className="mb-6 flex flex-col gap-3 rounded-xl bg-surface p-4 ring-1 ring-border sm:flex-row sm:flex-wrap sm:items-end"
+        className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.3fr_auto_auto] lg:items-end"
       >
-        <label className="flex flex-1 flex-col gap-1 text-xs text-muted">
-          Nombre
-          <input
+        <Field label="Nombre">
+          <Input
             type="text"
             value={name}
             onChange={(e) => {
@@ -139,12 +152,10 @@ export function CategoriesManager({
               if (!slugTouched) setSlug(slugify(e.target.value));
             }}
             placeholder="p. ej. Visión por computadora"
-            className="rounded-lg bg-background px-3 py-2 text-sm text-foreground ring-1 ring-border focus:outline-none focus:ring-accent/50"
           />
-        </label>
-        <label className="flex flex-1 flex-col gap-1 text-xs text-muted">
-          Slug (URL)
-          <input
+        </Field>
+        <Field label="Slug (URL)">
+          <Input
             type="text"
             value={slug}
             onChange={(e) => {
@@ -152,73 +163,78 @@ export function CategoriesManager({
               setSlugTouched(true);
             }}
             placeholder="vision-por-computadora"
-            className="rounded-lg bg-background px-3 py-2 text-sm text-foreground ring-1 ring-border focus:outline-none focus:ring-accent/50"
           />
-        </label>
-        <label className="flex flex-[2_2_0%] flex-col gap-1 text-xs text-muted">
-          Descripción (opcional)
-          <input
+        </Field>
+        <Field label="Descripción (opcional)" className="sm:col-span-2 lg:col-span-1">
+          <Input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Breve descripción de la temática"
-            className="rounded-lg bg-background px-3 py-2 text-sm text-foreground ring-1 ring-border focus:outline-none focus:ring-accent/50"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-muted">
-          Color
+        </Field>
+        <Field label="Color">
           <input
             type="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
             aria-label="Color de la categoría"
-            className="h-9 w-14 cursor-pointer rounded-lg bg-background ring-1 ring-border"
+            className={inputClasses({ className: "h-11 w-16 cursor-pointer p-1.5" })}
           />
-        </label>
-        <button
+        </Field>
+        <Button
           type="submit"
-          disabled={loading || !name.trim()}
-          className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-on-accent hover:opacity-90 disabled:opacity-50 transition"
+          disabled={!name.trim()}
+          loading={loading}
+          loadingText="Creando…"
+          className="sm:justify-self-start"
         >
-          {loading ? "Creando…" : "Crear"}
-        </button>
-      </form>
+          Crear
+        </Button>
+      </Card>
 
       {status && (
-        <p className={`mb-4 text-sm ${status.ok ? "text-accent-ink" : "text-red-400"}`}>
+        <Alert tone={status.ok ? "success" : "error"} className="mb-4">
           {status.text}
-        </p>
+        </Alert>
       )}
 
       {categories.length === 0 ? (
-        <p className="text-sm text-muted">Aún no hay categorías.</p>
+        <EmptyState description="Aún no hay categorías." />
       ) : (
         <ul className="flex flex-col gap-2">
           {categories.map((c, i) => (
-            <li
+            <Card
+              as="li"
               key={c.id}
-              className={`flex items-center justify-between gap-3 rounded-lg bg-surface px-4 py-3 ring-1 ${
-                c.is_active ? "ring-border" : "opacity-60 ring-border"
-              }`}
+              padding="none"
+              className={cn(
+                "flex flex-wrap items-center justify-between gap-3 px-4 py-3",
+                !c.is_active && "opacity-60"
+              )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <div className="flex flex-col">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => move(i, -1)}
                     disabled={i === 0}
-                    aria-label="Subir"
-                    className="text-faint hover:text-foreground disabled:opacity-20"
+                    aria-label={`Subir ${c.name}`}
+                    className="h-6 w-7 px-0"
                   >
                     ▲
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => move(i, 1)}
                     disabled={i === categories.length - 1}
-                    aria-label="Bajar"
-                    className="text-faint hover:text-foreground disabled:opacity-20"
+                    aria-label={`Bajar ${c.name}`}
+                    className="h-6 w-7 px-0"
                   >
                     ▼
-                  </button>
+                  </Button>
                 </div>
                 <input
                   type="color"
@@ -226,12 +242,14 @@ export function CategoriesManager({
                   onChange={(e) => patch(c.id, { color: e.target.value })}
                   aria-label={`Color de ${c.name}`}
                   title="Cambiar color de la categoría"
-                  className="h-7 w-7 shrink-0 cursor-pointer rounded-md bg-transparent ring-1 ring-border"
+                  className="h-8 w-8 shrink-0 cursor-pointer rounded-lg bg-transparent ring-1 ring-inset ring-border"
                 />
+                <IconTile size="sm" color={topicColor(c.slug)}>
+                  <CategoryIcon slug={c.slug} />
+                </IconTile>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">
-                    {c.name}{" "}
-                    <span className="font-sans text-xs text-faint">/{c.slug}</span>
+                  <p className="font-display text-[15px] font-bold text-foreground">
+                    {c.name} <span className="font-sans text-xs font-normal text-faint">/{c.slug}</span>
                   </p>
                   {c.description && (
                     <p className="truncate text-xs text-faint">{c.description}</p>
@@ -239,24 +257,20 @@ export function CategoriesManager({
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button
+                <Chip
+                  size="sm"
+                  variant="soft"
+                  pressed={c.is_active}
                   onClick={() => patch(c.id, { isActive: !c.is_active })}
-                  className={`rounded-lg px-3 py-1.5 text-xs transition ${
-                    c.is_active
-                      ? "border border-border text-muted hover:bg-fill"
-                      : "border border-accent/30 text-accent-ink hover:bg-accent/10"
-                  }`}
+                  title={c.is_active ? "Pulsa para desactivarla" : "Pulsa para activarla"}
                 >
                   {c.is_active ? "Activa" : "Inactiva"}
-                </button>
-                <button
-                  onClick={() => remove(c.id, c.name)}
-                  className="rounded-lg border border-red-800/50 px-3 py-1.5 text-xs text-red-400 hover:bg-red-900/30 transition"
-                >
+                </Chip>
+                <Button variant="danger" size="xs" onClick={() => remove(c.id, c.name)}>
                   Borrar
-                </button>
+                </Button>
               </div>
-            </li>
+            </Card>
           ))}
         </ul>
       )}

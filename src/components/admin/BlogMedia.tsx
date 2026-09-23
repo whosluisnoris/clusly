@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { timeAgo, formatDate } from "@/lib/dates";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  MetaLine,
+  SectionHeader,
+  textLinkClasses,
+} from "@/components/ui";
 
 interface MediaUsage {
   id: string;
@@ -115,58 +125,48 @@ export function BlogMedia({
   const enUso = files.filter((f) => f.usedBy.length > 0).length;
 
   return (
-    <section className="mt-10">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-bold text-foreground">
-          Imágenes <span className="text-accent-ink">del bucket</span>
-          {open && files.length > 0 && (
-            <span className="ml-2 text-xs font-normal text-faint">
-              {files.length} en total · {enUso} en uso
-            </span>
-          )}
-        </h3>
-        <div className="flex gap-2">
-          {open && (
-            <button
-              onClick={load}
-              disabled={loading}
-              className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs font-medium text-accent-ink transition hover:bg-accent/10 disabled:opacity-50"
-            >
-              {loading ? "Cargando…" : "Actualizar"}
-            </button>
-          )}
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition hover:bg-fill hover:text-foreground"
-          >
-            {open ? "Ocultar" : "Ver imágenes subidas"}
-          </button>
-        </div>
-      </div>
+    <section className="mt-14">
+      <SectionHeader
+        title={
+          <>
+            Imágenes del bucket
+            {open && files.length > 0 && (
+              <span className="ml-2 font-sans text-xs font-normal tracking-normal text-faint">
+                {files.length} en total · {enUso} en uso
+              </span>
+            )}
+          </>
+        }
+        action={
+          <div className="flex shrink-0 gap-2">
+            {open && (
+              <Button variant="secondary" size="xs" onClick={load} loading={loading} loadingText="Cargando…">
+                Actualizar
+              </Button>
+            )}
+            <Button variant="soft" size="xs" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+              {open ? "Ocultar" : "Ver imágenes subidas"}
+            </Button>
+          </div>
+        }
+      />
 
       {!open ? null : (
         <>
           {message && (
-            <p
-              className={`mb-3 text-sm ${message.ok ? "text-accent-ink" : "text-red-400"}`}
-            >
+            <Alert tone={message.ok ? "success" : "error"} className="mb-3">
               {message.text}
-            </p>
+            </Alert>
           )}
 
           {loading && files.length === 0 ? (
             <p className="text-sm text-muted">Cargando el bucket…</p>
           ) : files.length === 0 ? (
-            <p className="text-sm text-muted">
-              El bucket está vacío. Las imágenes que subas aparecerán aquí.
-            </p>
+            <EmptyState description="El bucket está vacío. Las imágenes que subas aparecerán aquí." />
           ) : (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {files.map((f) => (
-                <li
-                  key={f.path}
-                  className="flex flex-col overflow-hidden rounded-xl bg-surface ring-1 ring-border"
-                >
+                <Card as="li" key={f.path} padding="none" className="flex flex-col overflow-hidden">
                   <div className="relative aspect-video w-full bg-elevated">
                     <Image
                       src={f.url}
@@ -177,14 +177,17 @@ export function BlogMedia({
                     />
                   </div>
 
-                  <div className="flex flex-1 flex-col gap-2 p-3">
-                    <p className="truncate text-xs font-medium text-foreground" title={f.name}>
+                  <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+                    <p className="truncate text-xs font-semibold text-foreground" title={f.name}>
                       {f.name}
                     </p>
-                    <p className="text-[11px] text-faint">
-                      {formatSize(f.size)}
-                      {f.createdAt && ` · ${timeAgo(f.createdAt) ?? formatDate(f.createdAt)}`}
-                    </p>
+                    <MetaLine
+                      className="text-[11px]"
+                      items={[
+                        formatSize(f.size),
+                        f.createdAt && (timeAgo(f.createdAt) ?? formatDate(f.createdAt)),
+                      ]}
+                    />
 
                     {f.usedBy.length > 0 ? (
                       <p
@@ -194,38 +197,30 @@ export function BlogMedia({
                         En uso: {f.usedBy.map((u) => u.title).join(", ")}
                       </p>
                     ) : (
-                      <p className="text-[11px] text-faint">Sin usar</p>
+                      <Badge className="self-start">Sin usar</Badge>
                     )}
 
-                    <div className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-1 text-[11px]">
-                      <button
-                        onClick={() => onUseAsCover(f.url)}
-                        className="font-semibold text-accent-ink transition hover:underline"
-                      >
+                    <div className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-2 text-xs">
+                      <button type="button" onClick={() => onUseAsCover(f.url)} className={textLinkClasses("accent")}>
                         Portada
                       </button>
-                      <button
-                        onClick={() => onInsert(f.url)}
-                        className="font-semibold text-accent-ink transition hover:underline"
-                      >
+                      <button type="button" onClick={() => onInsert(f.url)} className={textLinkClasses("accent")}>
                         Insertar
                       </button>
-                      <button
-                        onClick={() => copy(f.url)}
-                        className="text-muted transition hover:text-foreground hover:underline"
-                      >
+                      <button type="button" onClick={() => copy(f.url)} className={textLinkClasses("muted")}>
                         Copiar URL
                       </button>
                       <button
+                        type="button"
                         onClick={() => remove(f)}
                         disabled={busyPath === f.path}
-                        className="font-semibold text-red-400 transition hover:underline disabled:opacity-50"
+                        className={textLinkClasses("danger")}
                       >
                         {busyPath === f.path ? "Borrando…" : "Borrar"}
                       </button>
                     </div>
                   </div>
-                </li>
+                </Card>
               ))}
             </ul>
           )}

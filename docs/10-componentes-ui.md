@@ -119,8 +119,10 @@ rutas internas pasan por `LocaleLink` y llevan el idioma solas).
 | `secondary` | Contorno. La alternativa a la principal ("Aportar video" en la landing, "Cancelar") |
 | `soft` | Fondo tenue. Atajos y acciones de apoyo |
 | `ghost` | Solo texto. Acciones terciarias dentro de una lista ("Quitar") |
+| `danger` | Contorno rojo. Acciones destructivas ("Borrar"), siempre tras un `confirm` |
 
-`size`: `sm` (36 px, barras y paneles), `md` (44 px, por defecto), `lg` (52 px,
+`size`: `xs` (32 px, acciones dentro de filas de una lista, como en el panel
+admin), `sm` (36 px, barras y paneles), `md` (44 px, por defecto), `lg` (52 px,
 el CTA del hero y los envíos de formulario). `block` ocupa todo el ancho (útil en
 móvil: `block className="sm:w-auto"`).
 
@@ -145,7 +147,16 @@ móvil: `block className="sm:w-auto"`).
 `accent` (naranja subrayado, llamadas dentro de un párrafo), `complement` (ámbar,
 el "Ver todo →" junto a un título) y `muted` (gris, enlaces secundarios).
 `textLinkClasses(tone)` da las clases para un `<button>` que debe verse como
-enlace ("Escribir otra").
+enlace ("Escribir otra"); para uno destructivo ("Borrar" en una lista) está el
+tono `danger`.
+
+**`Tabs`**: pestañas subrayadas para cambiar de vista dentro de una página (el
+panel admin). El estado lo lleva quien las usa; en móvil la fila se desliza.
+Si cada pestaña necesita su propia URL, usa enlaces en su lugar.
+
+```tsx
+<Tabs items={TABS} value={tab} onChange={setTab} label="Secciones del panel" />
+```
 
 **`Chip`**: píldora de alternar (`aria-pressed`) para filtros y selecciones.
 `pressed` es obligatoria. `variant="solid"` (el elegido se rellena de naranja:
@@ -239,7 +250,7 @@ clases para otro control.
 
 | Componente | Para qué | Props clave |
 |---|---|---|
-| `Alert` | Resultado de un envío, error, nota | `tone`: `success`/`neutral`/`error`; `title`; `action`. Con `title` el cuerpo va en gris |
+| `Alert` | Resultado de un envío, error, nota | `tone`: `success`/`neutral`/`warning` (ámbar: algo pide atención, como la cola de pendientes)/`error`; `title`; `action`. Con `title` el cuerpo va en gris |
 | `Badge` | Etiqueta corta en mayúsculas (rol, estado, EN VIVO) | `tone`: `neutral`/`accent`/`complement`/`live`; `dot` (`true` o `"pulse"`); `size` |
 | `Avatar` | Círculo con la inicial | `name`, `size`: `sm`/`md`/`lg` |
 | `MetaLine` | Metadatos separados por "·" | `items` (los vacíos se saltan) |
@@ -282,9 +293,21 @@ clases para otro control.
 4. Expórtalo en [`index.ts`](../src/components/ui/index.ts), añádelo a la página
    `/es/ui` (`src/app/[lang]/(catalog)/ui/page.tsx`) y a esta guía.
 
-## Qué falta migrar
+## Estado de la migración
 
-Las páginas públicas, la barra, los formularios y la cabecera del panel ya usan
-estos componentes. Los gestores internos de `/admin`
-(`src/components/admin/*Manager.tsx`) todavía tienen sus clases a mano: se
-pueden ir pasando a `Card`, `Field`, `Button` y `Alert` cuando se toquen.
+Todo el sitio usa estos componentes: páginas públicas, barra, formularios y el
+panel `/admin` completo (pestañas, catálogo, Platzi Lives, blog e imágenes del
+bucket, estadísticas y opiniones).
+
+El panel sigue el mismo patrón que el resto, en versión densa:
+
+- Cada gestor abre con un `SectionHeader` (y `action` para "Actualizar").
+- Los formularios de alta van en `Card as="form"` con `Field`.
+- Cada elemento de una lista es un `Card as="li"` con botones `size="xs"`:
+  la acción principal de la fila (`primary`, p. ej. "Aprobar", "Publicar"),
+  las alternativas en `secondary` y la destructiva en `danger`.
+- El resultado de cada acción va en un `Alert`; las listas vacías, en
+  `EmptyState`.
+
+Lo único con colores propios son las series de la gráfica de estadísticas
+(`DailyChart`), que usan una paleta categórica validada aparte.

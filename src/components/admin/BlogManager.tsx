@@ -6,6 +6,19 @@ import Image from "next/image";
 import { timeAgo, formatDate } from "@/lib/dates";
 import type { BlogPost } from "@/lib/blog";
 import { BlogMedia } from "@/components/admin/BlogMedia";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Input,
+  MetaLine,
+  SectionHeader,
+  Textarea,
+  buttonClasses,
+} from "@/components/ui";
 
 // Editor del blog. Solo llega aquí quien tiene rol owner/admin (el panel lo
 // resuelve el Server Component de /admin) y, además, todas las llamadas van a
@@ -191,51 +204,64 @@ export function BlogManager() {
 
   return (
     <section>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-foreground">
-          Blog <span className="text-accent-ink">de Clusly</span>
-        </h2>
-        <p className="text-xs text-muted">
-          {published.length} {published.length === 1 ? "publicado" : "publicados"} ·{" "}
-          {drafts.length} {drafts.length === 1 ? "borrador" : "borradores"}
-        </p>
-      </div>
+      <SectionHeader
+        title="Blog de Clusly"
+        action={
+          <span className="text-xs text-muted">
+            {published.length} {published.length === 1 ? "publicado" : "publicados"} ·{" "}
+            {drafts.length} {drafts.length === 1 ? "borrador" : "borradores"}
+          </span>
+        }
+      />
 
       {/* Editor */}
-      <form
-        onSubmit={save}
-        className="mb-6 flex flex-col gap-3 rounded-xl bg-surface p-4 ring-1 ring-border"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-          {editingId ? "Editando artículo" : "Nuevo artículo"}
-        </p>
-
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={160}
-          placeholder="Título del artículo"
-          className="rounded-lg bg-background px-4 py-2.5 text-sm font-semibold text-foreground ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
+      <Card as="form" onSubmit={save} className="mb-4 flex flex-col gap-6">
+        <SectionHeader
+          size="sm"
+          as="h3"
+          className="mb-0 sm:mb-0"
+          title={editingId ? "Editando artículo" : "Nuevo artículo"}
         />
 
-        <textarea
-          value={excerpt}
-          onChange={(e) => setExcerpt(e.target.value)}
-          maxLength={300}
-          rows={2}
-          placeholder="Resumen (aparece en la lista del blog y al compartir)"
-          className="resize-y rounded-lg bg-background px-4 py-2.5 text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-        />
+        <Field label="Título" counter={`${title.length}/160`}>
+          <Input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={160}
+            placeholder="Título del artículo"
+            className="font-semibold"
+          />
+        </Field>
+
+        <Field
+          label="Resumen"
+          hint="Aparece en la lista del blog y al compartir."
+          counter={`${excerpt.length}/300`}
+        >
+          <Textarea
+            value={excerpt}
+            onChange={(e) => setExcerpt(e.target.value)}
+            maxLength={300}
+            rows={2}
+            placeholder="Una o dos frases que inviten a leerlo"
+          />
+        </Field>
 
         {/* Portada */}
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Portada
-          </p>
+        <Field
+          group
+          label="Portada"
+          hint={
+            <>
+              Se guarda en el bucket <code>blog</code> de Supabase. Máx. 5 MB · PNG, JPG,
+              WEBP, GIF o AVIF.
+            </>
+          }
+        >
           {coverUrl ? (
             <div className="flex flex-wrap items-center gap-3">
-              <div className="relative h-24 w-40 shrink-0 overflow-hidden rounded-lg bg-elevated ring-1 ring-border">
+              <div className="relative h-24 w-40 shrink-0 overflow-hidden rounded-xl bg-elevated ring-1 ring-border">
                 <Image
                   src={coverUrl}
                   alt="Portada del artículo"
@@ -244,31 +270,30 @@ export function BlogManager() {
                   className="object-cover"
                 />
               </div>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="xs"
                 onClick={() => coverInput.current?.click()}
-                disabled={uploading}
-                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill hover:text-foreground disabled:opacity-50"
+                loading={uploading}
+                loadingText="Subiendo…"
               >
                 Cambiar
-              </button>
-              <button
-                type="button"
-                onClick={() => setCoverUrl("")}
-                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill hover:text-foreground"
-              >
+              </Button>
+              <Button variant="ghost" size="xs" onClick={() => setCoverUrl("")}>
                 Quitar
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
-              type="button"
+            <Button
+              variant="soft"
+              size="sm"
               onClick={() => coverInput.current?.click()}
-              disabled={uploading}
-              className="self-start rounded-lg border border-dashed border-border-strong px-4 py-2.5 text-xs text-muted transition hover:bg-fill hover:text-foreground disabled:opacity-50"
+              loading={uploading}
+              loadingText="Subiendo…"
+              className="self-start border border-dashed border-border-strong ring-0"
             >
-              {uploading ? "Subiendo…" : "⬆ Subir portada"}
-            </button>
+              ⬆ Subir portada
+            </Button>
           )}
           <input
             ref={coverInput}
@@ -277,24 +302,24 @@ export function BlogManager() {
             onChange={pickCover}
             className="hidden"
           />
-          <span className="text-xs text-faint">
-            Se guarda en el bucket <code>blog</code> de Supabase. Máx. 5 MB · PNG, JPG,
-            WEBP, GIF o AVIF.
-          </span>
-        </div>
+        </Field>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Contenido
-          </p>
-          <button
-            type="button"
-            onClick={() => inlineInput.current?.click()}
-            disabled={uploading}
-            className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs font-semibold text-accent-ink transition hover:bg-accent/10 disabled:opacity-50"
-          >
-            {uploading ? "Subiendo…" : "🖼 Insertar imagen"}
-          </button>
+        <Field
+          group
+          label="Contenido"
+          counter={
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => inlineInput.current?.click()}
+              loading={uploading}
+              loadingText="Subiendo…"
+              className="normal-case tracking-normal"
+            >
+              🖼 Insertar imagen
+            </Button>
+          }
+        >
           <input
             ref={inlineInput}
             type="file"
@@ -302,80 +327,73 @@ export function BlogManager() {
             onChange={pickInline}
             className="hidden"
           />
-        </div>
+          <Textarea
+            ref={contentArea}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={14}
+            aria-label="Contenido del artículo"
+            placeholder={
+              "Contenido del artículo.\n\nAcepta Markdown básico:\n# Título   ## Subtítulo\n- viñetas   1. numeradas\n> cita\n**negrita**, *cursiva*, `código`, [enlace](https://…)\n![texto alternativo](url de la imagen)\n```\nbloque de código\n```"
+            }
+            className="font-mono"
+          />
+        </Field>
 
-        <textarea
-          ref={contentArea}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={14}
-          placeholder={
-            "Contenido del artículo.\n\nAcepta Markdown básico:\n# Título   ## Subtítulo\n- viñetas   1. numeradas\n> cita\n**negrita**, *cursiva*, `código`, [enlace](https://…)\n![texto alternativo](url de la imagen)\n```\nbloque de código\n```"
-          }
-          className="resize-y rounded-lg bg-background px-4 py-2.5 font-mono text-sm text-foreground placeholder-faint ring-1 ring-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-        />
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
+        <div className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center">
+          <Button
             type="submit"
-            disabled={busy}
-            className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition hover:opacity-90 disabled:opacity-50"
+            loading={busy}
+            loadingText="Guardando…"
           >
-            {busy ? "Guardando…" : editingId ? "Guardar cambios" : "Crear borrador"}
-          </button>
+            {editingId ? "Guardar cambios" : "Crear borrador"}
+          </Button>
           {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="rounded-lg border border-border px-4 py-2 text-sm text-muted transition hover:bg-fill hover:text-foreground"
-            >
+            <Button variant="secondary" onClick={resetForm}>
               Cancelar
-            </button>
+            </Button>
           )}
           <span className="text-xs text-faint">
             Se crea como borrador; nadie lo ve hasta que lo publiques.
           </span>
         </div>
-      </form>
+      </Card>
 
       {status && (
-        <p className={`mb-4 text-sm ${status.ok ? "text-accent-ink" : "text-red-400"}`}>
+        <Alert tone={status.ok ? "success" : "error"} className="mb-4">
           {status.text}
-        </p>
+        </Alert>
       )}
 
       {/* Listado */}
       {posts.length === 0 ? (
-        <p className="text-sm text-muted">
-          Todavía no hay artículos. Escribe el primero arriba.
-        </p>
+        <EmptyState description="Todavía no hay artículos. Escribe el primero arriba." />
       ) : (
         <ul className="flex flex-col gap-3">
           {posts.map((p) => (
-            <li
+            <Card
+              as="li"
               key={p.id}
-              className="flex flex-wrap items-start justify-between gap-3 rounded-xl bg-surface p-4 ring-1 ring-border"
+              padding="sm"
+              className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
             >
               <div className="min-w-0 flex-1">
-                <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-foreground">
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-                      p.status === "published"
-                        ? "bg-accent/20 text-accent-ink"
-                        : "bg-amber-500/20 text-amber-500"
-                    }`}
-                  >
-                    {p.status === "published" ? "Publicado" : "Borrador"}
-                  </span>
-                  <span className="truncate">{p.title}</span>
+                <Badge tone={p.status === "published" ? "accent" : "complement"}>
+                  {p.status === "published" ? "Publicado" : "Borrador"}
+                </Badge>
+                <p className="font-display mt-2 truncate text-[15px] font-bold text-foreground">
+                  {p.title}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-faint">
-                  /blog/{p.slug}
-                  {p.authorName ? ` · ${p.authorName}` : ""} ·{" "}
-                  {p.status === "published" && p.publishedAt
-                    ? `publicado ${timeAgo(p.publishedAt) ?? formatDate(p.publishedAt)}`
-                    : `editado ${timeAgo(p.updatedAt) ?? formatDate(p.updatedAt)}`}
-                </p>
+                <MetaLine
+                  className="mt-0.5"
+                  items={[
+                    `/blog/${p.slug}`,
+                    p.authorName,
+                    p.status === "published" && p.publishedAt
+                      ? `publicado ${timeAgo(p.publishedAt) ?? formatDate(p.publishedAt)}`
+                      : `editado ${timeAgo(p.updatedAt) ?? formatDate(p.updatedAt)}`,
+                  ]}
+                />
               </div>
 
               <div className="flex shrink-0 flex-wrap gap-2">
@@ -383,39 +401,29 @@ export function BlogManager() {
                   <Link
                     href={`/blog/${p.slug}`}
                     target="_blank"
-                    className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill hover:text-foreground"
+                    className={buttonClasses({ variant: "ghost", size: "xs" })}
                   >
-                    Ver
+                    Ver ↗
                   </Link>
                 )}
-                <button
-                  onClick={() => startEdit(p)}
-                  className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill hover:text-foreground"
-                >
+                <Button variant="secondary" size="xs" onClick={() => startEdit(p)}>
                   Editar
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant={p.status === "published" ? "secondary" : "primary"}
+                  size="xs"
                   onClick={() =>
                     changeStatus(p.id, p.status === "published" ? "draft" : "published")
                   }
                   disabled={busy}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
-                    p.status === "published"
-                      ? "border border-border text-muted hover:bg-fill hover:text-foreground"
-                      : "bg-accent text-on-accent hover:opacity-90"
-                  }`}
                 >
                   {p.status === "published" ? "Despublicar" : "Publicar"}
-                </button>
-                <button
-                  onClick={() => remove(p.id, p.title)}
-                  disabled={busy}
-                  className="rounded-lg border border-red-800/50 px-3 py-1.5 text-xs text-red-400 transition hover:bg-red-900/30 disabled:opacity-50"
-                >
+                </Button>
+                <Button variant="danger" size="xs" onClick={() => remove(p.id, p.title)} disabled={busy}>
                   Borrar
-                </button>
+                </Button>
               </div>
-            </li>
+            </Card>
           ))}
         </ul>
       )}

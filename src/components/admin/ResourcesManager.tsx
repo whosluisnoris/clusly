@@ -9,6 +9,18 @@ import type {
 } from "@/lib/types";
 import { parseYouTubeUrl } from "@/lib/youtube-url";
 import { CategoryMultiSelect } from "@/components/CategoryMultiSelect";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  Field,
+  Input,
+  SectionHeader,
+  textLinkClasses,
+} from "@/components/ui";
 
 type AdminResource = ResourceRow & {
   resource_categories: { category_id: string }[];
@@ -137,202 +149,174 @@ export function ResourcesManager() {
 
   return (
     <section>
-      <h2 className="mb-4 text-lg font-bold text-foreground">
-        Recursos <span className="text-accent-ink">del catálogo</span>
-      </h2>
+      <SectionHeader title="Recursos del catálogo" />
 
       {/* Alta de recurso */}
-      <form
-        onSubmit={handleAdd}
-        className="mb-6 flex flex-col gap-3 rounded-xl bg-surface p-4 ring-1 ring-border"
-      >
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Pega una URL de video o de playlist de YouTube…"
-            className="flex-1 rounded-lg bg-background px-4 py-2 text-sm text-foreground ring-1 ring-border focus:outline-none focus:ring-accent/50"
-          />
-          <button
-            type="submit"
-            disabled={loading || !detected}
-            className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-on-accent hover:opacity-90 disabled:opacity-50 transition"
-          >
-            {loading ? "Agregando…" : "Agregar"}
-          </button>
-        </div>
-
-        {url.trim() && (
-          <p className="text-xs text-faint">
-            {detected
-              ? `Detectado: ${detected.kind === "playlist" ? "📚 Playlist" : "🎬 Video"} (${detected.id})`
-              : "No se reconoce como video ni playlist de YouTube"}
-          </p>
-        )}
+      <Card as="form" onSubmit={handleAdd} className="mb-4 flex flex-col gap-5">
+        <Field
+          label="URL de YouTube"
+          hint={
+            url.trim()
+              ? detected
+                ? `Detectado: ${detected.kind === "playlist" ? "📚 Playlist" : "🎬 Video"} (${detected.id})`
+                : "No se reconoce como video ni playlist de YouTube"
+              : "Un video suelto o una playlist (/playlist?list=…)."
+          }
+        >
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Pega una URL de video o de playlist de YouTube…"
+              aria-invalid={url.trim() !== "" && !detected}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={!detected} loading={loading} loadingText="Agregando…">
+              Agregar
+            </Button>
+          </div>
+        </Field>
 
         {showTitle && (
-          <input
-            type="text"
-            value={manualTitle}
-            onChange={(e) => setManualTitle(e.target.value)}
-            placeholder="Título de la playlist (no se pudo leer de YouTube)…"
-            className="rounded-lg bg-background px-4 py-2 text-sm text-foreground ring-1 ring-amber-500/40 focus:outline-none focus:ring-amber-500/60"
-          />
+          <Field label="Título de la playlist" hint="No se pudo leer de YouTube: escríbelo a mano.">
+            <Input
+              type="text"
+              value={manualTitle}
+              onChange={(e) => setManualTitle(e.target.value)}
+              placeholder="Título de la playlist…"
+              className="ring-complement/50"
+            />
+          </Field>
         )}
 
-        <div>
-          <p className="mb-2 text-xs text-muted">Categorías:</p>
+        <Field group label="Categorías">
           <CategoryMultiSelect
             categories={categories}
             selected={selectedCats}
             onChange={setSelectedCats}
           />
-        </div>
+        </Field>
 
-        <div>
-          <p className="mb-2 text-xs text-muted">Idioma del video:</p>
+        <Field group label="Idioma del video">
           <div className="flex gap-2">
             {(["es", "en"] as const).map((value) => (
-              <button
+              <Chip
                 key={value}
-                type="button"
+                size="sm"
+                pressed={language === value}
                 onClick={() => setLanguage(value)}
-                aria-pressed={language === value}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                  language === value
-                    ? "bg-accent text-on-accent"
-                    : "bg-fill text-muted ring-1 ring-border hover:text-foreground"
-                }`}
               >
                 {value === "es" ? "Español" : "Inglés"}
-              </button>
+              </Chip>
             ))}
           </div>
-        </div>
-      </form>
+        </Field>
+      </Card>
 
       {status && (
-        <p className={`mb-4 text-sm ${status.ok ? "text-accent-ink" : "text-red-400"}`}>
+        <Alert tone={status.ok ? "success" : "error"} className="mb-4">
           {status.text}
-        </p>
+        </Alert>
       )}
 
       {/* Cola de moderación: aportes enviados sin cuenta */}
       {pending.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-500/10 px-4 py-3 ring-1 ring-amber-500/30">
-          <p className="text-sm text-foreground">
-            <b>
-              {pending.length} {pending.length === 1 ? "aporte" : "aportes"} pendientes
-            </b>{" "}
-            <span className="text-muted">
-              de aprobación (llegaron sin cuenta y no se ven en el catálogo).
-            </span>
-          </p>
-          <button
-            onClick={() => setOnlyPending((v) => !v)}
-            className="rounded-lg border border-amber-500/40 px-3 py-1.5 text-xs font-semibold text-amber-500 transition hover:bg-amber-500/10"
-          >
-            {onlyPending ? "Ver todos" : "Revisar pendientes"}
-          </button>
-        </div>
+        <Alert
+          tone="warning"
+          className="mb-4"
+          title={`${pending.length} ${pending.length === 1 ? "aporte pendiente" : "aportes pendientes"} de aprobación`}
+          action={
+            <Button variant="secondary" size="xs" onClick={() => setOnlyPending((v) => !v)}>
+              {onlyPending ? "Ver todos" : "Revisar pendientes"}
+            </Button>
+          }
+        >
+          Llegaron sin cuenta y no se ven en el catálogo hasta que los apruebes.
+        </Alert>
       )}
 
-      {/* Tabla de recursos */}
+      {/* Lista de recursos */}
       {shown.length === 0 ? (
-        <p className="text-sm text-muted">
-          {resources.length === 0
-            ? "Aún no hay recursos. Pega arriba la URL de un video o una playlist de YouTube."
-            : "No hay aportes pendientes."}
-        </p>
+        <EmptyState
+          description={
+            resources.length === 0
+              ? "Aún no hay recursos. Pega arriba la URL de un video o una playlist de YouTube."
+              : "No hay aportes pendientes."
+          }
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {shown.map((r) => (
-            <li key={r.id} className="rounded-xl bg-surface ring-1 ring-border">
-              <div className="flex items-start justify-between gap-3 p-4">
-                <div className="min-w-0">
-                  <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-                        r.kind === "playlist"
-                          ? "bg-[#4a90e0]/20 text-[#7fb3ea]"
-                          : "bg-fill-strong text-muted"
-                      }`}
-                    >
+            <Card as="li" key={r.id} padding="none" className="overflow-hidden">
+              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={r.kind === "playlist" ? "accent" : "neutral"}>
                       {r.kind === "playlist" ? `Playlist · ${r.video_count ?? 0}` : "Video"}
-                    </span>
-                    {r.status === "pending" && (
-                      <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-500">
-                        Pendiente
-                      </span>
-                    )}
-                    {r.status === "hidden" && (
-                      <span className="rounded bg-fill-strong px-1.5 py-0.5 text-[10px] font-bold uppercase text-faint">
-                        Oculto
-                      </span>
-                    )}
-                    <span className="truncate">{r.title}</span>
+                    </Badge>
+                    {r.status === "pending" && <Badge tone="complement">Pendiente</Badge>}
+                    {r.status === "hidden" && <Badge>Oculto</Badge>}
+                  </div>
+                  <p className="font-display mt-2 line-clamp-2 text-[15px] font-bold leading-snug text-foreground">
+                    {r.title}
                   </p>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 truncate text-xs text-faint">
-                    <span>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-faint">
+                    <span className="truncate">
                       {r.channel_title ? `${r.channel_title} · ` : ""}
                       {r.youtube_id}
                     </span>
-                    <span>·</span>
-                    <button
-                      onClick={() =>
-                        changeLanguage(r.id, r.language === "es" ? "en" : "es")
-                      }
+                    <span aria-hidden="true">·</span>
+                    <Chip
+                      size="sm"
+                      variant="soft"
+                      pressed={false}
+                      onClick={() => changeLanguage(r.id, r.language === "es" ? "en" : "es")}
                       title="Cambiar el idioma hablado del video"
-                      className="rounded bg-fill px-1.5 py-0.5 font-bold uppercase text-muted transition hover:text-accent-ink"
+                      className="h-6 px-2 text-[10px] uppercase tracking-wide ring-1 ring-inset ring-border"
                     >
                       {r.language === "en" ? "EN" : "ES"}
-                    </button>
-                  </p>
+                    </Chip>
+                  </div>
 
                   {/* Categorías del recurso */}
                   {editId === r.id ? (
-                    <div className="mt-2 flex flex-col gap-2">
+                    <div className="mt-3 flex flex-col gap-3">
                       <CategoryMultiSelect
                         categories={categories}
                         selected={editCats}
                         onChange={setEditCats}
                       />
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => saveCats(r.id)}
-                          className="rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-on-accent"
-                        >
+                        <Button size="xs" onClick={() => saveCats(r.id)}>
                           Guardar
-                        </button>
-                        <button
-                          onClick={() => setEditId(null)}
-                          className="rounded-lg border border-border px-3 py-1 text-xs text-muted"
-                        >
+                        </Button>
+                        <Button variant="secondary" size="xs" onClick={() => setEditId(null)}>
                           Cancelar
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
                       {r.resource_categories.length === 0 ? (
-                        <span className="text-xs text-amber-500/80">Sin categoría</span>
+                        <Badge tone="complement">Sin categoría</Badge>
                       ) : (
                         r.resource_categories.map((rc) => (
                           <span
                             key={rc.category_id}
-                            className="rounded-full bg-fill px-2 py-0.5 text-[11px] text-muted"
+                            className="rounded-full bg-fill px-2 py-0.5 text-[11px] font-semibold text-muted ring-1 ring-inset ring-border"
                           >
                             {catName(rc.category_id)}
                           </span>
                         ))
                       )}
                       <button
+                        type="button"
                         onClick={() => {
                           setEditId(r.id);
                           setEditCats(r.resource_categories.map((rc) => rc.category_id));
                         }}
-                        className="text-[11px] text-accent-ink hover:underline"
+                        className={textLinkClasses("accent", "ml-1 text-xs")}
                       >
                         editar
                       </button>
@@ -340,50 +324,40 @@ export function ResourcesManager() {
                   )}
                 </div>
 
-                <div className="flex shrink-0 flex-col items-end gap-2">
+                <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-stretch">
                   {r.status === "pending" ? (
-                    <button
-                      onClick={() => changeStatus(r.id, "published")}
-                      className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-on-accent transition hover:opacity-90"
-                    >
+                    <Button size="xs" onClick={() => changeStatus(r.id, "published")}>
                       Aprobar
-                    </button>
+                    </Button>
                   ) : r.status === "hidden" ? (
-                    <button
-                      onClick={() => changeStatus(r.id, "published")}
-                      className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs text-accent-ink transition hover:bg-accent/10"
-                    >
+                    <Button variant="secondary" size="xs" onClick={() => changeStatus(r.id, "published")}>
                       Publicar
-                    </button>
+                    </Button>
                   ) : (
-                    <button
-                      onClick={() => changeStatus(r.id, "hidden")}
-                      className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition hover:bg-fill"
-                    >
+                    <Button variant="secondary" size="xs" onClick={() => changeStatus(r.id, "hidden")}>
                       Ocultar
-                    </button>
+                    </Button>
                   )}
-                  <button
-                    onClick={() => remove(r.id, r.title)}
-                    className="rounded-lg border border-red-800/50 px-3 py-1.5 text-xs text-red-400 hover:bg-red-900/30 transition"
-                  >
-                    Quitar
-                  </button>
                   {r.kind === "playlist" && (
-                    <button
+                    <Button
+                      variant="soft"
+                      size="xs"
+                      aria-expanded={expandedId === r.id}
                       onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
-                      className="rounded-lg border border-[#4a90e0]/40 px-3 py-1.5 text-xs text-[#7fb3ea] hover:bg-[#4a90e0]/10 transition"
                     >
                       {expandedId === r.id ? "Cerrar" : "Episodios"}
-                    </button>
+                    </Button>
                   )}
+                  <Button variant="danger" size="xs" onClick={() => remove(r.id, r.title)}>
+                    Quitar
+                  </Button>
                 </div>
               </div>
 
               {r.kind === "playlist" && expandedId === r.id && (
                 <PlaylistItemsEditor resourceId={r.id} onCountChange={load} />
               )}
-            </li>
+            </Card>
           ))}
         </ul>
       )}
@@ -467,34 +441,29 @@ function PlaylistItemsEditor({
 
   return (
     <div className="border-t border-border bg-background/60 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted">
-          Episodios ({items.length})
-        </p>
-        <button
-          onClick={resync}
-          disabled={busy}
-          className="rounded-lg border border-accent/30 px-3 py-1 text-xs text-accent-ink hover:bg-accent/10 disabled:opacity-50 transition"
-        >
-          {busy ? "…" : "Resincronizar con YouTube"}
-        </button>
-      </div>
+      <SectionHeader
+        size="sm"
+        title={`Episodios (${items.length})`}
+        action={
+          <Button variant="secondary" size="xs" onClick={resync} loading={busy} loadingText="Sincronizando…">
+            Resincronizar con YouTube
+          </Button>
+        }
+      />
 
       <form onSubmit={addItem} className="mb-3 flex gap-2">
-        <input
+        <Input
+          compact
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Agregar un video por URL/ID…"
-          className="flex-1 rounded-lg bg-background px-3 py-1.5 text-xs text-foreground ring-1 ring-border focus:outline-none focus:ring-accent/50"
+          aria-label="Agregar un video por URL o ID"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={busy || !url.trim()}
-          className="rounded-lg bg-fill-strong px-3 py-1.5 text-xs text-foreground hover:bg-fill-strong disabled:opacity-50 transition"
-        >
+        <Button type="submit" variant="soft" size="sm" disabled={busy || !url.trim()}>
           Agregar
-        </button>
+        </Button>
       </form>
 
       {msg && <p className="mb-2 text-xs text-muted">{msg}</p>}
@@ -502,22 +471,24 @@ function PlaylistItemsEditor({
       {items.length === 0 ? (
         <p className="text-xs text-faint">Sin episodios todavía.</p>
       ) : (
-        <ol className="flex flex-col gap-1">
+        <ol className="flex flex-col gap-0.5">
           {items.map((it) => (
             <li
               key={it.id}
-              className="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-fill"
+              className="flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-xs transition hover:bg-fill"
             >
               <span className="min-w-0 truncate text-muted">
-                <span className="text-faint">{it.position}.</span> {it.title}
+                <span className="tabular-nums text-faint">{it.position}.</span> {it.title}
               </span>
-              <button
+              <Button
+                variant="ghost"
+                size="xs"
                 onClick={() => removeItem(it.youtube_video_id)}
-                className="shrink-0 text-red-400/70 hover:text-red-400"
-                aria-label="Quitar episodio"
+                aria-label={`Quitar episodio ${it.position}`}
+                className="h-7 w-7 shrink-0 px-0 hover:text-danger-ink"
               >
                 ✕
-              </button>
+              </Button>
             </li>
           ))}
         </ol>

@@ -7,6 +7,7 @@ import { CategoriesManager } from "@/components/admin/CategoriesManager";
 import { ResourcesManager } from "@/components/admin/ResourcesManager";
 import { OpinionsManager } from "@/components/admin/OpinionsManager";
 import { BlogManager } from "@/components/admin/BlogManager";
+import { Tabs } from "@/components/ui";
 
 type Tab = "catalogo" | "platzi" | "blog" | "stats" | "opiniones";
 
@@ -26,27 +27,13 @@ export function AdminDashboard() {
 
   return (
     <>
-      <div className="mb-8 flex gap-1 border-b border-border">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition ${
-              tab === t.key
-                ? "border-accent text-accent-ink"
-                : "border-transparent text-muted hover:text-foreground"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs items={TABS} value={tab} onChange={setTab} label="Secciones del panel" className="mb-8" />
 
       {tab === "catalogo" && (
-        <>
+        <div className="flex flex-col gap-14">
           <CategoriesManager />
           <ResourcesManager />
-        </>
+        </div>
       )}
       {tab === "platzi" && <StreamsManager />}
       {tab === "blog" && <BlogManager />}

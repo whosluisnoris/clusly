@@ -23,6 +23,7 @@ export { Card, cardClasses, type CardVariant, type CardPadding } from "./Card";
 export { GlowCard, GlowFrame } from "./GlowCard";
 export { IconTile } from "./IconTile";
 export { Chip } from "./Chip";
+export { Tabs } from "./Tabs";
 export { Badge, type BadgeTone } from "./Badge";
 export { Field, Input, Textarea, Select, inputClasses } from "./Field";
 export { Alert, type AlertTone } from "./Alert";

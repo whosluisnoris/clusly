@@ -3,6 +3,16 @@
 import { useState, useCallback, useEffect } from "react";
 import type { LiveStream } from "@/lib/invidious";
 import { formatDate } from "@/lib/dates";
+import {
+  Alert,
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Input,
+  MetaLine,
+  SectionHeader,
+} from "@/components/ui";
 
 const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 
@@ -92,64 +102,61 @@ export function StreamsManager() {
 
   return (
     <section>
-      <p className="mb-6 text-sm text-muted">
+      <SectionHeader title="Lives de Platzi" />
+      <p className="-mt-2 mb-6 max-w-2xl text-sm leading-relaxed text-muted">
         Los lives se detectan y guardan automáticamente. Aquí puedes agregar uno a
         mano o quitar los que no quieras mostrar.
       </p>
 
       {/* Formulario para agregar */}
-      <form onSubmit={handleAdd} className="mb-6 flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Pega una URL de YouTube o un ID de video…"
-          className="flex-1 rounded-lg bg-surface px-4 py-2 text-sm text-foreground ring-1 ring-border focus:outline-none focus:ring-accent/50"
-        />
-        <button
-          type="submit"
-          disabled={loading || !input.trim()}
-          className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-on-accent hover:opacity-90 disabled:opacity-50 transition"
-        >
-          {loading ? "Agregando…" : "Agregar"}
-        </button>
-      </form>
+      <Card as="form" onSubmit={handleAdd} className="mb-4">
+        <Field label="URL o ID del video">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Pega una URL de YouTube o un ID de video…"
+              className="flex-1"
+            />
+            <Button type="submit" disabled={!input.trim()} loading={loading} loadingText="Agregando…">
+              Agregar
+            </Button>
+          </div>
+        </Field>
+      </Card>
 
       {status && (
-        <p className={`mb-4 text-sm ${status.ok ? "text-accent-ink" : "text-red-400"}`}>
+        <Alert tone={status.ok ? "success" : "error"} className="mb-4">
           {status.text}
-        </p>
+        </Alert>
       )}
 
       {/* Lista de videos guardados */}
       {streams.length === 0 ? (
-        <p className="text-sm text-muted">No hay videos guardados.</p>
+        <EmptyState description="No hay videos guardados." />
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2">
           {streams.map((s) => (
-            <li
+            <Card
+              as="li"
               key={s.videoId}
-              className="flex items-center justify-between rounded-lg bg-surface px-4 py-3 ring-1 ring-accent/20"
+              padding="none"
+              className="flex items-center justify-between gap-4 px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{s.title}</p>
-                <p className="text-xs text-muted">
-                  {s.videoId}
-                  {s.liveStartedAt && (
-                    <span className="text-faint">
-                      {" · "}
-                      {formatDate(s.liveStartedAt)}
-                    </span>
-                  )}
+                <p className="font-display truncate text-[15px] font-bold text-foreground">
+                  {s.title}
                 </p>
+                <MetaLine
+                  className="mt-0.5"
+                  items={[s.videoId, s.liveStartedAt && formatDate(s.liveStartedAt)]}
+                />
               </div>
-              <button
-                onClick={() => handleRemove(s.videoId)}
-                className="ml-4 shrink-0 rounded-lg border border-red-800/50 px-3 py-1.5 text-xs text-red-400 hover:bg-red-900/30 transition"
-              >
+              <Button variant="danger" size="xs" onClick={() => handleRemove(s.videoId)}>
                 Quitar
-              </button>
-            </li>
+              </Button>
+            </Card>
           ))}
         </ul>
       )}

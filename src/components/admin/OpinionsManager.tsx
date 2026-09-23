@@ -3,6 +3,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { timeAgo, formatDate } from "@/lib/dates";
 import { SENTIMENTS, SENTIMENT_META, isSentiment } from "@/lib/opinions";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  MetaLine,
+  SectionHeader,
+  cn,
+  textLinkClasses,
+} from "@/components/ui";
 
 interface AdminOpinion {
   id: string;
@@ -87,114 +99,99 @@ export function OpinionsManager() {
 
   return (
     <section>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-foreground">
-          Opiniones <span className="text-accent-ink">de los usuarios</span>
-        </h2>
-        <button
-          onClick={load}
-          className="rounded-lg border border-accent/30 px-3 py-1.5 text-xs font-medium text-accent-ink transition hover:bg-accent/10"
-        >
-          Actualizar
-        </button>
-      </div>
+      <SectionHeader
+        title="Opiniones de los usuarios"
+        action={
+          <Button variant="secondary" size="sm" onClick={load}>
+            Actualizar
+          </Button>
+        }
+      />
 
       {/* Reparto de sentimientos entre las opiniones sin archivar */}
-      <div className="mb-6 flex flex-wrap gap-3">
+      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {SENTIMENTS.map((value) => {
           const { emoji, label } = SENTIMENT_META[value];
           const count = activas.filter((o) => o.sentiment === value).length;
           const pct =
             activas.length > 0 ? Math.round((count / activas.length) * 100) : 0;
           return (
-            <div
-              key={value}
-              className="min-w-[150px] flex-1 rounded-xl bg-surface p-4 ring-1 ring-border"
-            >
-              <p className="text-xs text-muted">
-                {emoji} {label}
+            <Card key={value} padding="sm" className="sm:p-5">
+              <p className="text-xs font-semibold text-muted">
+                <span aria-hidden="true">{emoji}</span> {label}
               </p>
-              <p className="mt-1 text-2xl font-black tabular-nums text-foreground">
+              <p className="font-display mt-1 text-3xl font-extrabold tabular-nums text-foreground">
                 {count}
-                <span className="ml-1.5 text-sm font-semibold text-faint">{pct}%</span>
+                <span className="ml-1.5 font-sans text-sm font-semibold text-faint">{pct}%</span>
               </p>
-            </div>
+            </Card>
           );
         })}
       </div>
 
-      <div className="mb-4 flex gap-1.5">
+      <div role="group" aria-label="Filtrar opiniones" className="mb-4 flex flex-wrap gap-1.5">
         {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-              filter === f.key
-                ? "bg-accent text-on-accent"
-                : "bg-fill text-muted ring-1 ring-border hover:text-foreground"
-            }`}
-          >
+          <Chip key={f.key} size="sm" pressed={filter === f.key} onClick={() => setFilter(f.key)}>
             {f.label}
-          </button>
+          </Chip>
         ))}
       </div>
 
-      {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
+      {error && (
+        <Alert tone="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       {shown.length === 0 ? (
-        <p className="text-sm text-muted">
-          {opinions.length === 0
-            ? "Todavía nadie ha dejado su opinión."
-            : "No hay opiniones con ese filtro."}
-        </p>
+        <EmptyState
+          description={
+            opinions.length === 0
+              ? "Todavía nadie ha dejado su opinión."
+              : "No hay opiniones con ese filtro."
+          }
+        />
       ) : (
         <ul className="flex max-w-3xl flex-col gap-3">
           {shown.map((o) => {
             const meta = isSentiment(o.sentiment) ? SENTIMENT_META[o.sentiment] : null;
             return (
-              <li
-                key={o.id}
-                className={`glass backdrop-blur-md rounded-xl p-4 ${
-                  o.hidden ? "opacity-60" : ""
-                }`}
-              >
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+              <Card as="li" key={o.id} padding="sm" className={cn(o.hidden && "opacity-60")}>
+                <div className="flex flex-wrap items-center gap-2">
                   <span aria-hidden="true">{meta?.emoji ?? ""}</span>
-                  <span className="font-bold text-foreground">{o.authorName}</span>
-                  <span className="text-faint">·</span>
-                  <span className="text-muted">{meta?.label ?? o.sentiment}</span>
-                  <span className="text-faint">·</span>
-                  <span className="text-faint">
-                    {timeAgo(o.createdAt) ?? formatDate(o.createdAt)}
-                  </span>
-                  {o.hidden && (
-                    <span className="rounded-full bg-fill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-faint">
-                      Archivada
-                    </span>
-                  )}
+                  <MetaLine
+                    items={[
+                      <span key="a" className="font-bold text-foreground">{o.authorName}</span>,
+                      <span key="s" className="text-muted">{meta?.label ?? o.sentiment}</span>,
+                      timeAgo(o.createdAt) ?? formatDate(o.createdAt),
+                    ]}
+                  />
+                  {o.hidden && <Badge>Archivada</Badge>}
                 </div>
 
-                <p className="mt-2 whitespace-pre-wrap break-words text-sm text-foreground">
+                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
                   {o.message}
                 </p>
 
-                <div className="mt-3 flex gap-3 text-xs">
+                <div className="mt-3 flex gap-4 text-xs">
                   <button
+                    type="button"
                     onClick={() => setHidden(o.id, !o.hidden)}
                     disabled={busyId === o.id}
-                    className="font-semibold text-accent-ink transition hover:underline disabled:opacity-50"
+                    className={textLinkClasses("accent")}
                   >
                     {o.hidden ? "Restaurar" : "Archivar"}
                   </button>
                   <button
+                    type="button"
                     onClick={() => remove(o.id)}
                     disabled={busyId === o.id}
-                    className="font-semibold text-red-400 transition hover:underline disabled:opacity-50"
+                    className={textLinkClasses("danger")}
                   >
                     Borrar
                   </button>
                 </div>
-              </li>
+              </Card>
             );
           })}
         </ul>

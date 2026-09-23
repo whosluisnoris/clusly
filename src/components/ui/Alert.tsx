@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { cn } from "./cn";
 
-export type AlertTone = "success" | "neutral" | "error";
+export type AlertTone = "success" | "neutral" | "warning" | "error";
 
 const TONES: Record<AlertTone, string> = {
   success: "bg-accent/10 ring-accent/25",
   neutral: "bg-fill ring-border",
+  warning: "bg-complement/10 ring-complement/35",
   error: "bg-danger/10 ring-danger/30",
 };
 
 // Aviso en línea: resultado de un envío, error de red, nota de privacidad.
+// `warning` (ámbar) es para lo que pide atención sin ser un error (una cola
+// de pendientes por revisar).
 // Con `title` el cuerpo va en gris debajo; sin él, el cuerpo es el mensaje (en
 // rojo si es un error). `action` va al final (un TextLink, un Button).
 //
